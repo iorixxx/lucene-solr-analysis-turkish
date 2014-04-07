@@ -4,7 +4,7 @@ lucene-solr-analysis-turkish
 Turkish analysis components for Lucene/Solr
 
 *open source* usage gaining momentum in Turkey. Turkish users on lucene/solr mailing lists are increasing.
-This project makes use of publicly available Turkish nlp tools to create lucene/solr plugins from them.
+This project makes use of publicly available Turkish nlp tools to create [lucene/solr plugins](https://cwiki.apache.org/confluence/display/solr/Solr+Plugins) from them.
 In order to promote and support open source I created this project. Stock lucene/solr has
 [SnowballPorterFilter(Factory)](https://cwiki.apache.org/confluence/display/solr/Language+Analysis#LanguageAnalysis-Turkish)
 for Turkish language However this stemmer performs poorly and has funny collisions. I will post some of the collisions here.
@@ -32,4 +32,4 @@ I will post benchmark results of different field types (different stemmers) desi
 * Apache Lucene (Solr) 4.x
 
 ##Author
-Please feel free to contact Ahmet Arslan at <iorixxx at yahoo dot com> if you have any questions, comments or contributions.
+Please feel free to contact Ahmet Arslan at >iorixxx at yahoo dot com> if you have any questions, comments or contributions.
