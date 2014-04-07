@@ -32,4 +32,4 @@ I will post benchmark results of different field types (different stemmers) desi
 * Apache Lucene (Solr) 4.x
 
 ##Author
-Please feel free to contact Ahmet Arslan at > iorixxx at yahoo dot com> if you have any questions, comments or contributions.
+Please feel free to contact Ahmet Arslan at > iorixxx at yahoo dot com if you have any questions, comments or contributions.
