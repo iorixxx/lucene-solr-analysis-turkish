@@ -20,17 +20,18 @@ package org.apache.lucene.analysis.tr;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
 
+import java.io.File;
 import java.util.Map;
 
 /**
  * Factory for {@link TRMorphStemFilterFactory}.
  * <pre class="prettyprint">
- * &lt;fieldType name="text_tr_f5" class="solr.TextField" positionIncrementGap="100"&gt;
+ * &lt;fieldType name="text_tr_morph" class="solr.TextField" positionIncrementGap="100"&gt;
  *   &lt;analyzer&gt;
  *     &lt;tokenizer class="solr.StandardTokenizerFactory"/&gt;
  *     &lt;filter class="solr.ApostropheFilterFactory"/&gt;
  *     &lt;filter class="solr.TurkishLowerCaseFilterFactory"/&gt;
- *     &lt;filter class="solr.TRMorphStemFilterFactory" lookup="lookup" fst="stem.fst"/&gt;
+ *     &lt;filter class="org.apache.lucene.analysis.tr.TRMorphStemFilterFactory" lookup="/Applications/foma/flookup" fst="/Volumes/datadisk/Desktop/TRmorph-master/stem.fst"/&gt;
  *   &lt;/analyzer&gt;
  * &lt;/fieldType&gt;</pre>
  */
@@ -44,11 +45,34 @@ public class TRMorphStemFilterFactory extends TokenFilterFactory {
         super(args);
 
         strategy = get(args, "strategy", "max");
-        lookup = get(args, "lookup", "lookup");
-        fst = get(args, "fst", "stem.fst");
+        lookup = require(args, "lookup");
+        fst = require(args, "fst");
 
         if (!args.isEmpty())
             throw new IllegalArgumentException("Unknown parameters: " + args);
+
+        if (!"min".equals(strategy) && !"max".equals(strategy))
+            throw new IllegalArgumentException("unknown strategy " + strategy);
+
+        if (lookup != null) {
+            File f = new File(lookup);
+            if (!f.isAbsolute()) {
+                throw new IllegalArgumentException("AbsolutePath must be provided for lookup executable: " + lookup);
+            }
+            if (!(f.isFile() && f.canRead())) {
+                throw new IllegalArgumentException("Cannot read lookup executable: " + lookup);
+            }
+        }
+
+        if (fst != null) {
+            File f = new File(fst);
+            if (!f.isAbsolute()) {
+                throw new IllegalArgumentException("AbsolutePath must be provided for fst: " + fst);
+            }
+            if (!(f.isFile() && f.canRead())) {
+                throw new IllegalArgumentException("Cannot read fst: " + fst);
+            }
+        }
     }
 
     @Override

@@ -16,6 +16,17 @@ Turkish Stemmer based on [TRmorph](https://github.com/coltekin/TRmorph)
 This one is not production ready yet. It requires OS specific [foma](https://code.google.com/p/foma/) executable.
 I couldn't find an elegant way to convert foma to java.
 
+``` xml
+<fieldType name="text_tr_morph" class="solr.TextField" positionIncrementGap="100">
+  <analyzer>
+    <tokenizer class="solr.StandardTokenizerFactory"/>
+    <filter class="solr.ApostropheFilterFactory"/>
+    <filter class="solr.TurkishLowerCaseFilterFactory"/>
+    <filter class="org.apache.lucene.analysis.tr.TRMorphStemFilterFactory" lookup="/Applications/foma/flookup" fst="/Volumes/datadisk/Desktop/TRmorph-master/stem.fst" />
+  </analyzer>
+</fieldType>
+```
+
 2. **ZemberekStemFilter(Factory)**
 Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp)
 
