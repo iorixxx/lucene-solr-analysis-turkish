@@ -18,35 +18,49 @@ package org.apache.lucene.analysis.tr;
  */
 
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.miscellaneous.StemmerOverrideFilter;
+import org.apache.lucene.analysis.util.ResourceLoader;
+import org.apache.lucene.analysis.util.ResourceLoaderAware;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Factory for {@link TRMorphStemFilterFactory}.
  * <pre class="prettyprint">
  * &lt;fieldType name="text_tr_morph" class="solr.TextField" positionIncrementGap="100"&gt;
- *   &lt;analyzer&gt;
- *     &lt;tokenizer class="solr.StandardTokenizerFactory"/&gt;
- *     &lt;filter class="solr.ApostropheFilterFactory"/&gt;
- *     &lt;filter class="solr.TurkishLowerCaseFilterFactory"/&gt;
- *     &lt;filter class="org.apache.lucene.analysis.tr.TRMorphStemFilterFactory" lookup="/Applications/foma/flookup" fst="/Volumes/datadisk/Desktop/TRmorph-master/stem.fst"/&gt;
- *   &lt;/analyzer&gt;
+ * &lt;analyzer&gt;
+ * &lt;tokenizer class="solr.StandardTokenizerFactory"/&gt;
+ * &lt;filter class="solr.ApostropheFilterFactory"/&gt;
+ * &lt;filter class="solr.TurkishLowerCaseFilterFactory"/&gt;
+ * &lt;filter class="org.apache.lucene.analysis.tr.TRMorphStemFilterFactory" lookup="/Applications/foma/flookup" fst="/Volumes/datadisk/Desktop/TRmorph-master/stem.fst"/&gt;
+ * &lt;/analyzer&gt;
  * &lt;/fieldType&gt;</pre>
  */
-public class TRMorphStemFilterFactory extends TokenFilterFactory {
+public class TRMorphStemFilterFactory extends TokenFilterFactory implements ResourceLoaderAware {
 
+
+    private StemmerOverrideFilter.StemmerOverrideMap cache;
+    boolean ignoreCase = false;
+    private final String cacheFiles;
     private final String strategy;
-    private final String lookup;
-    private final String fst;
+    private final String lookup_fst;
+
 
     public TRMorphStemFilterFactory(Map<String, String> args) {
         super(args);
 
+        final String lookup;
+        final String fst;
+
+        cacheFiles = get(args, "cache");
         strategy = get(args, "strategy", "max");
         lookup = require(args, "lookup");
         fst = require(args, "fst");
+
 
         if (!args.isEmpty())
             throw new IllegalArgumentException("Unknown parameters: " + args);
@@ -73,10 +87,34 @@ public class TRMorphStemFilterFactory extends TokenFilterFactory {
                 throw new IllegalArgumentException("Cannot read fst: " + fst);
             }
         }
+
+        lookup_fst = lookup + " " + fst;
+    }
+
+    @Override
+    public void inform(ResourceLoader loader) throws IOException {
+        if (cacheFiles != null) {
+            assureMatchVersion();
+            List<String> files = splitFileNames(cacheFiles);
+            if (files.size() > 0) {
+                StemmerOverrideFilter.Builder builder = new StemmerOverrideFilter.Builder(ignoreCase);
+                for (String file : files) {
+                    List<String> list = getLines(loader, file.trim());
+                    for (String line : list) {
+                        builder.add(line, TRMorphStemFilter.stem(line, strategy, lookup_fst));
+                    }
+                }
+                cache = builder.build();
+            }
+        }
     }
 
     @Override
     public TokenStream create(TokenStream input) {
-        return new TRMorphStemFilter(input, lookup, fst, strategy);
+        TRMorphStemFilter filter = new TRMorphStemFilter(input, lookup_fst, strategy);
+        if (cache != null) {
+            filter.setCache(cache);
+        }
+        return filter;
     }
 }

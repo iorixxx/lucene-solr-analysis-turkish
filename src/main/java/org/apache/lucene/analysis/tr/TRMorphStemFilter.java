@@ -19,13 +19,18 @@ package org.apache.lucene.analysis.tr;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.miscellaneous.StemmerOverrideFilter;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.KeywordAttribute;
 import org.apache.lucene.analysis.tr.util.Piper;
-import org.apache.lucene.analysis.util.CharArrayMap;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.CharsRef;
+import org.apache.lucene.util.UnicodeUtil;
+import org.apache.lucene.util.fst.FST;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -42,42 +47,55 @@ public final class TRMorphStemFilter extends TokenFilter {
 
     private final CharTermAttribute termAttribute = addAttribute(CharTermAttribute.class);
     private final KeywordAttribute keywordAttribute = addAttribute(KeywordAttribute.class);
-    private CharArrayMap<String> cache = null;
-    private final String aggregation;
-    private final String lookup;
-    private final String fst;
 
-    public void setCache(CharArrayMap<String> cache) {
+    private StemmerOverrideFilter.StemmerOverrideMap cache;
+    private FST.BytesReader fstReader;
+
+    private final FST.Arc<BytesRef> scratchArc = new FST.Arc<>();
+    private final CharsRef spare = new CharsRef();
+
+    private final String aggregation;
+    private final String lookup_fst;
+
+    public void setCache(StemmerOverrideFilter.StemmerOverrideMap cache) {
         this.cache = cache;
+        fstReader = cache.getBytesReader();
     }
 
-    public TRMorphStemFilter(TokenStream input, String lookup, String fst, String aggregation) {
+    public TRMorphStemFilter(TokenStream input, String lookup_fst, String aggregation) {
         super(input);
-        this.lookup = lookup;
-        this.fst = fst;
+        this.lookup_fst = lookup_fst;
         this.aggregation = aggregation;
     }
 
     @Override
     public boolean incrementToken() throws IOException {
-        if (input.incrementToken()) {
-            final String term = termAttribute.toString();
-            // Check the exclusion table.
-            if (!keywordAttribute.isKeyword()) {
-                final String s = stem(term);
-                // If not stemmed, don't waste the time adjusting the token.
-                if ((s != null) && !s.equals(term))
-                    termAttribute.setEmpty().append(s);
+        if (!input.incrementToken()) return false;
+        if (keywordAttribute.isKeyword()) return true;
+
+        if (cache != null) {
+            final BytesRef stem = cache.get(termAttribute.buffer(), termAttribute.length(), scratchArc, fstReader);
+            if (stem != null) {
+                final char[] buffer = spare.chars = termAttribute.buffer();
+                UnicodeUtil.UTF8toUTF16(stem.bytes, stem.offset, stem.length, spare);
+                if (spare.chars != buffer) {
+                    termAttribute.copyBuffer(spare.chars, spare.offset, spare.length);
+                }
+                termAttribute.setLength(spare.length);
             }
-            return true;
         } else {
-            return false;
+            final String term = termAttribute.toString();
+            final String s = stem(term, aggregation, lookup_fst);
+            // If not stemmed, don't waste the time adjusting the token.
+            if ((s != null) && !s.equals(term))
+                termAttribute.setEmpty().append(s);
         }
+        return true;
     }
 
-    private String stem(String word) throws IOException {
+    static String stem(String word, String aggregation, String lookup_sft) throws IOException {
 
-        List<String> parses = parse(word);
+        List<String> parses = parse(word, lookup_sft);
 
         TreeSet<String> set = new TreeSet<>();
 
@@ -116,10 +134,10 @@ public final class TRMorphStemFilter extends TokenFilter {
         }
     }
 
-    public List<String> parse(String word) throws IOException {
+    private static List<String> parse(String word, String lookup_fst) throws IOException {
         List<String> list = new ArrayList<>();
         java.lang.Runtime rt = java.lang.Runtime.getRuntime();
-        java.lang.Process p2 = rt.exec(lookup + " " + fst);
+        java.lang.Process p2 = rt.exec(lookup_fst);
         Piper pipe = new Piper(new ByteArrayInputStream(word.getBytes(StandardCharsets.UTF_8)), p2.getOutputStream());
         new Thread(pipe).start();
         try {
@@ -127,19 +145,22 @@ public final class TRMorphStemFilter extends TokenFilter {
         } catch (InterruptedException ie) {
             return list;
         }
-        java.io.BufferedReader r = new java.io.BufferedReader(new java.io.InputStreamReader(p2.getInputStream()));
-        String s;
-        while ((s = r.readLine()) != null) {
 
-            s = s.trim();
-            if (s.length() == 0) continue;
+        try (BufferedReader r = new BufferedReader(new java.io.InputStreamReader(p2.getInputStream()))) {
+            String s;
+            while ((s = r.readLine()) != null) {
 
-            if (s.startsWith(word))
-                list.add(s);
-            else
-                log.warn("unexpected line from word " + word + " " + s);
+                s = s.trim();
+                if (s.length() == 0) continue;
+
+                if (s.startsWith(word))
+                    list.add(s);
+                else
+                    log.warn("unexpected line from word " + word + " " + s);
+            }
         }
         return list;
+
     }
 }
 

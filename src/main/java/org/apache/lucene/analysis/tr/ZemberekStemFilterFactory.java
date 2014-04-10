@@ -18,9 +18,11 @@ package org.apache.lucene.analysis.tr;
  */
 
 
-import com.google.common.collect.Lists;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.util.*;
+import org.apache.lucene.analysis.miscellaneous.StemmerOverrideFilter;
+import org.apache.lucene.analysis.util.ResourceLoader;
+import org.apache.lucene.analysis.util.ResourceLoaderAware;
+import org.apache.lucene.analysis.util.TokenFilterFactory;
 import zemberek.morphology.lexicon.RootLexicon;
 import zemberek.morphology.lexicon.SuffixProvider;
 import zemberek.morphology.lexicon.graph.DynamicLexiconGraph;
@@ -30,6 +32,7 @@ import zemberek.morphology.parser.MorphParser;
 import zemberek.morphology.parser.SimpleParser;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,27 +44,25 @@ import java.util.Map;
  * &lt;tokenizer class="solr.StandardTokenizerFactory"/&gt;
  * &lt;filter class="solr.ApostropheFilterFactory"/&gt;
  * &lt;filter class="solr.TurkishLowerCaseFilterFactory"/&gt;
- * &lt;filter class="solr.ZemberekStemFilterFactory" strategy="max"/&gt;
+ * &lt;filter class="solr.ZemberekStemFilterFactory" dictionary="master-dictionary.dict,secondary-dictionary.dict,non-tdk.dict,proper.dict" strategy="max"/&gt;
  * &lt;/analyzer&gt;
  * &lt;/fieldType&gt;</pre>
  */
 public class ZemberekStemFilterFactory extends TokenFilterFactory implements ResourceLoaderAware {
 
+    private MorphParser parser;
+    private StemmerOverrideFilter.StemmerOverrideMap cache;
+    boolean ignoreCase = false;
+
     private final String strategy;
     private final String dictionaryFiles;
     private final String cacheFiles;
-    private final int cacheSize;
-    List<String> _lines = Lists.newArrayList();
-    private CharArraySet _cacheLines;
-
 
     public ZemberekStemFilterFactory(Map<String, String> args) {
         super(args);
+        dictionaryFiles = require(args, "dictionary");
         strategy = get(args, "strategy", "max");
-
-        dictionaryFiles = get(args, "dictionary");
         cacheFiles = get(args, "cache");
-        cacheSize = getInt(args, "cacheSize", 5000);
 
         if (!args.isEmpty()) {
             throw new IllegalArgumentException("Unknown parameters: " + args);
@@ -71,55 +72,43 @@ public class ZemberekStemFilterFactory extends TokenFilterFactory implements Res
     @Override
     public void inform(ResourceLoader loader) throws IOException {
 
+        List<String> lines = new ArrayList<>();
         if (dictionaryFiles != null) {
             List<String> files = splitFileNames(dictionaryFiles);
             if (files.size() > 0) {
                 for (String file : files) {
                     List<String> wlist = getLines(loader, file.trim());
-                    _lines.addAll(wlist);
+                    lines.addAll(wlist);
                 }
             }
         }
 
-        _cacheLines = getWordSet(loader, cacheFiles, false);
-        /*
-        if (cacheFiles != null) {
-            List<String> files = splitFileNames(cacheFiles);
-
-            if (files.size() > 0) {
-                for (String file : files) {
-                    List<String> wlist = getLines(loader, file.trim());
-                    if ((_cacheLines.size() + wlist.size()) < cacheSize)
-                        _cacheLines.addAll(wlist);
-                    else {
-                        _cacheLines.addAll(wlist.subList(0, cacheSize - _cacheLines.size()));
-                        break;
-                    }
-
-                }
-            }
-        }
-        */
-    }
-
-    @Override
-    public TokenStream create(TokenStream input) {
-
-        MorphParser parser;
         SuffixProvider suffixProvider = new TurkishSuffixes();
-        RootLexicon lexicon = new TurkishDictionaryLoader(suffixProvider).load(_lines);
+        RootLexicon lexicon = new TurkishDictionaryLoader(suffixProvider).load(lines);
         DynamicLexiconGraph graph = new DynamicLexiconGraph(suffixProvider);
         graph.addDictionaryItems(lexicon);
         parser = new SimpleParser(graph);
 
+        if (cacheFiles != null) {
+            assureMatchVersion();
+            List<String> files = splitFileNames(cacheFiles);
+            if (files.size() > 0) {
+                StemmerOverrideFilter.Builder builder = new StemmerOverrideFilter.Builder(ignoreCase);
+                for (String file : files) {
+                    List<String> list = getLines(loader, file.trim());
+                    for (String line : list) {
+                        builder.add(line, ZemberekStemFilter.stem(line, parser, strategy));
+                    }
+                }
+                cache = builder.build();
+            }
+        }
+    }
+
+    @Override
+    public TokenStream create(TokenStream input) {
         ZemberekStemFilter filter = new ZemberekStemFilter(input, parser, strategy);
-
-        if (_cacheLines != null) {
-            CharArrayMap<String> cache = new CharArrayMap<>(luceneMatchVersion, _cacheLines.size(), false);
-
-            for (Object a : _cacheLines)
-                cache.put(a, filter.stem(a.toString()));
-
+        if (cache != null) {
             filter.setCache(cache);
         }
         return filter;

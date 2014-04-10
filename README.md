@@ -30,17 +30,44 @@ I couldn't find an elegant way to convert foma to java.
 2. **ZemberekStemFilter(Factory)**
 Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp)
 
+``` xml
+<fieldType name="text_tr_zemberek" class="solr.TextField" positionIncrementGap="100">
+  <analyzer>
+    <tokenizer class="solr.StandardTokenizerFactory"/>
+    <filter class="solr.ApostropheFilterFactory"/>
+    <filter class="solr.TurkishLowerCaseFilterFactory"/>
+    <filter class="org.apache.lucene.analysis.tr.ZemberekStemFilterFactory" cache="zemberek/top-20K-words.txt" dictionary="zemberek/master-dictionary.dict,zemberek/secondary-dictionary.dict,zemberek/non-tdk.dict,zemberek/proper.dict" strategy="max"/>
+  </analyzer>
+</fieldType>
+```
+
 3. **TurkishDeasciifyFilter(Factory)**
 Translation of [Turkish Deasciifier](https://github.com/emres/turkish-deasciifier) from Python to Java.
 This filter intended to be used at query time to allow *diacritics-insensitive search* for Turkish.
-
+``` xml
+<fieldType name="text_tr_deascii" class="solr.TextField" positionIncrementGap="100">
+   <analyzer type="index">
+     <tokenizer class="solr.StandardTokenizerFactory"/>
+     <filter class="solr.ApostropheFilterFactory"/>
+     <filter class="solr.TurkishLowerCaseFilterFactory"/>
+     <filter class="org.apache.lucene.analysis.tr.ZemberekStemFilterFactory" cache="zemberek/top-20K-words.txt" dictionary="zemberek/master-dictionary.dict,zemberek/secondary-dictionary.dict,zemberek/non-tdk.dict,zemberek/proper.dict" strategy="max"/>
+   </analyzer>
+   <analyzer type="query">
+     <tokenizer class="solr.StandardTokenizerFactory"/>
+     <filter class="solr.ApostropheFilterFactory"/>
+     <filter class="solr.TurkishLowerCaseFilterFactory"/>
+     <filter class="org.apache.lucene.analysis.tr.TurkishDeasciifyFilterFactory" preserveOriginal="true"/>
+     <filter class="org.apache.lucene.analysis.tr.ZemberekStemFilterFactory" cache="zemberek/top-20K-words.txt" dictionary="zemberek/master-dictionary.dict,zemberek/secondary-dictionary.dict,zemberek/non-tdk.dict,zemberek/proper.dict" strategy="max"/>
+   </analyzer>
+ </fieldType>
+ ```
 
 I will post benchmark results of different field types (different stemmers) designed for different use-cases.
 
 ##Dependencies
 * JRE 1.7 or above
 * Apache Maven 3.0.3 or above
-* Apache Lucene (Solr) 4.x
+* Apache Lucene (Solr) 4.8
 
 ##Author
 Please feel free to contact Ahmet Arslan at `iorixxx at yahoo dot com` if you have any questions, comments or contributions.

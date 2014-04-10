@@ -80,7 +80,7 @@ public class App {
         String text = "Türkçe, Türk dili ya da Türkiye Türkçesi, batıda Balkanlar’dan doğuda Hazar Denizi sahasına kadar konuşulan Altay dillerinden biridir.";
         TokenStream ts = new StandardTokenizer(Version.LUCENE_47, new StringReader(text));
         ts = new TurkishLowerCaseFilter(ts);
-        ts = new TRMorphStemFilter(ts, "/Volumes/data/foma/flookup", "/Users/iorixxx/Desktop/stem.fst", "max");
+        ts = new TRMorphStemFilter(ts, "/Volumes/data/foma/flookup Users/iorixxx/Desktop/stem.fst", "max");
         ts.reset();
 
         CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
