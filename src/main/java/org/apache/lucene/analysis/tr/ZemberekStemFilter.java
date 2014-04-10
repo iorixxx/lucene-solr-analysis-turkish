@@ -21,7 +21,7 @@ import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.KeywordAttribute;
-import zemberek.morphology.apps.SimpleMorphCache;
+import org.apache.lucene.analysis.util.CharArrayMap;
 import zemberek.morphology.parser.MorphParse;
 import zemberek.morphology.parser.MorphParser;
 
@@ -37,32 +37,26 @@ public final class ZemberekStemFilter extends TokenFilter {
 
 
     private final MorphParser parser;
-    private final SimpleMorphCache cache;
+    private CharArrayMap<String> cache = null;
 
     private final String aggregation;
 
     private final CharTermAttribute termAttribute = addAttribute(CharTermAttribute.class);
     private final KeywordAttribute keywordAttribute = addAttribute(KeywordAttribute.class);
 
-    public ZemberekStemFilter(TokenStream input, MorphParser parser, SimpleMorphCache cache, String aggregation) {
+    public ZemberekStemFilter(TokenStream input, MorphParser parser, String aggregation) {
         super(input);
         this.parser = parser;
-        this.cache = cache;
         this.aggregation = aggregation;
     }
 
-    private List<MorphParse> parse(String word) {
-        if (cache != null) {
-            List<MorphParse> result = cache.parse(word);
-            return result != null ? result : parser.parse(word);
-        } else
-            return parser.parse(word);
+    public void setCache(CharArrayMap<String> cache) {
+        this.cache = cache;
     }
 
+    String stem(String word) {
 
-    private String stem(String word, String aggregation) {
-
-        List<MorphParse> parses = parse(word);
+        List<MorphParse> parses = parser.parse(word);
         if (parses.size() == 0) return word;
 
 
@@ -96,14 +90,22 @@ public final class ZemberekStemFilter extends TokenFilter {
     @Override
     public boolean incrementToken() throws IOException {
         if (input.incrementToken()) {
+
+
+            if (keywordAttribute.isKeyword()) return true;
+
             final String term = termAttribute.toString();
-            // Check the exclusion table.
-            if (!keywordAttribute.isKeyword()) {
-                final String s = stem(term, aggregation);
-                // If not stemmed, don't waste the time adjusting the token.
-                if ((s != null) && !s.equals(term))
-                    termAttribute.setEmpty().append(s);
-            }
+
+            String s = null;
+
+            if (cache != null && cache.containsKey(termAttribute.buffer(), 0, termAttribute.length()))
+                s = cache.get(termAttribute.buffer(), 0, termAttribute.length());
+            else
+                stem(term);
+
+            if ((s != null) && !s.equals(term))
+                termAttribute.setEmpty().append(s);
+
             return true;
         } else {
             return false;

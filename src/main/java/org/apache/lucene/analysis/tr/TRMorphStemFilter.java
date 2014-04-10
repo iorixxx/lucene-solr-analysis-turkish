@@ -22,6 +22,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.KeywordAttribute;
 import org.apache.lucene.analysis.tr.util.Piper;
+import org.apache.lucene.analysis.util.CharArrayMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,10 +42,14 @@ public final class TRMorphStemFilter extends TokenFilter {
 
     private final CharTermAttribute termAttribute = addAttribute(CharTermAttribute.class);
     private final KeywordAttribute keywordAttribute = addAttribute(KeywordAttribute.class);
-
+    private CharArrayMap<String> cache = null;
     private final String aggregation;
     private final String lookup;
     private final String fst;
+
+    public void setCache(CharArrayMap<String> cache) {
+        this.cache = cache;
+    }
 
     public TRMorphStemFilter(TokenStream input, String lookup, String fst, String aggregation) {
         super(input);

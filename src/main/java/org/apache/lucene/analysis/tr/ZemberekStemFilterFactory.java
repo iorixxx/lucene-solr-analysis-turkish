@@ -20,10 +20,7 @@ package org.apache.lucene.analysis.tr;
 
 import com.google.common.collect.Lists;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.util.ResourceLoader;
-import org.apache.lucene.analysis.util.ResourceLoaderAware;
-import org.apache.lucene.analysis.util.TokenFilterFactory;
-import zemberek.morphology.apps.SimpleMorphCache;
+import org.apache.lucene.analysis.util.*;
 import zemberek.morphology.lexicon.RootLexicon;
 import zemberek.morphology.lexicon.SuffixProvider;
 import zemberek.morphology.lexicon.graph.DynamicLexiconGraph;
@@ -40,12 +37,12 @@ import java.util.Map;
  * Factory for {@link ZemberekStemFilter}.
  * <pre class="prettyprint">
  * &lt;fieldType name="text_tr_zemberek" class="solr.TextField" positionIncrementGap="100"&gt;
- *   &lt;analyzer&gt;
- *     &lt;tokenizer class="solr.StandardTokenizerFactory"/&gt;
- *     &lt;filter class="solr.ApostropheFilterFactory"/&gt;
- *     &lt;filter class="solr.TurkishLowerCaseFilterFactory"/&gt;
- *     &lt;filter class="solr.ZemberekStemFilterFactory" strategy="max"/&gt;
- *   &lt;/analyzer&gt;
+ * &lt;analyzer&gt;
+ * &lt;tokenizer class="solr.StandardTokenizerFactory"/&gt;
+ * &lt;filter class="solr.ApostropheFilterFactory"/&gt;
+ * &lt;filter class="solr.TurkishLowerCaseFilterFactory"/&gt;
+ * &lt;filter class="solr.ZemberekStemFilterFactory" strategy="max"/&gt;
+ * &lt;/analyzer&gt;
  * &lt;/fieldType&gt;</pre>
  */
 public class ZemberekStemFilterFactory extends TokenFilterFactory implements ResourceLoaderAware {
@@ -55,7 +52,7 @@ public class ZemberekStemFilterFactory extends TokenFilterFactory implements Res
     private final String cacheFiles;
     private final int cacheSize;
     List<String> _lines = Lists.newArrayList();
-    List<String> _cacheLines = Lists.newArrayList();
+    private CharArraySet _cacheLines;
 
 
     public ZemberekStemFilterFactory(Map<String, String> args) {
@@ -84,42 +81,47 @@ public class ZemberekStemFilterFactory extends TokenFilterFactory implements Res
             }
         }
 
+        _cacheLines = getWordSet(loader, cacheFiles, false);
+        /*
         if (cacheFiles != null) {
             List<String> files = splitFileNames(cacheFiles);
+
             if (files.size() > 0) {
                 for (String file : files) {
                     List<String> wlist = getLines(loader, file.trim());
-                    if (cacheSize > 0)
-                        _cacheLines.addAll(wlist.subList(0, cacheSize));
-                    else
+                    if ((_cacheLines.size() + wlist.size()) < cacheSize)
                         _cacheLines.addAll(wlist);
+                    else {
+                        _cacheLines.addAll(wlist.subList(0, cacheSize - _cacheLines.size()));
+                        break;
+                    }
+
                 }
             }
         }
+        */
     }
 
     @Override
     public TokenStream create(TokenStream input) {
 
         MorphParser parser;
-        SimpleMorphCache cache = null;
+        SuffixProvider suffixProvider = new TurkishSuffixes();
+        RootLexicon lexicon = new TurkishDictionaryLoader(suffixProvider).load(_lines);
+        DynamicLexiconGraph graph = new DynamicLexiconGraph(suffixProvider);
+        graph.addDictionaryItems(lexicon);
+        parser = new SimpleParser(graph);
 
-        try {
+        ZemberekStemFilter filter = new ZemberekStemFilter(input, parser, strategy);
 
-            SuffixProvider suffixProvider = new TurkishSuffixes();
-            RootLexicon lexicon = new TurkishDictionaryLoader(suffixProvider).load(_lines);
-            DynamicLexiconGraph graph = new DynamicLexiconGraph(suffixProvider);
-            graph.addDictionaryItems(lexicon);
-            parser = new SimpleParser(graph);
+        if (_cacheLines != null) {
+            CharArrayMap<String> cache = new CharArrayMap<>(luceneMatchVersion, _cacheLines.size(), false);
 
-            if (_cacheLines.size() > 0) {
-                cache = new SimpleMorphCache(parser, _cacheLines);
-            }
+            for (Object a : _cacheLines)
+                cache.put(a, filter.stem(a.toString()));
 
-        } catch (IOException ioe) {
-            throw new RuntimeException("Error creating Zemberek instance", ioe);
+            filter.setCache(cache);
         }
-
-        return new ZemberekStemFilter(input, parser, cache, strategy);
+        return filter;
     }
 }
