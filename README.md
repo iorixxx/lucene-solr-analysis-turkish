@@ -13,8 +13,8 @@ Currently we have three TokenFilters. Detailed documentation is on the way.
 
 1. **TRMorphStemFilter(Factory)**
 Turkish Stemmer based on [TRmorph](https://github.com/coltekin/TRmorph)
-This one is not production ready yet. It requires OS specific [foma](https://code.google.com/p/foma/) executable.
-I couldn't find an elegant way to convert foma to java.
+This one is not production ready yet. It requires Operating System specific [foma](https://code.google.com/p/foma/) executable.
+I couldn't find an elegant way to convert `foma` to java.
 
 ``` xml
 <fieldType name="text_tr_morph" class="solr.TextField" positionIncrementGap="100">
@@ -29,6 +29,8 @@ I couldn't find an elegant way to convert foma to java.
 
 2. **ZemberekStemFilter(Factory)**
 Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp)
+Download tr folder which contains dictionary files, from [tr](https://github.com/iorixxx/zemberek-nlp/tree/master/morphology/src/main/resources/tr) and put it under solr/collection1/conf/
+You need three jars : zemberek-morphology-0.9.1.jar zemberek-core-0.9.1.jar TurkishAnalysis-4.7.1.jar inside solr/collection1/lib directory.
 
 ``` xml
 <fieldType name="text_tr_zemberek" class="solr.TextField" positionIncrementGap="100">
@@ -36,7 +38,7 @@ Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp)
     <tokenizer class="solr.StandardTokenizerFactory"/>
     <filter class="solr.ApostropheFilterFactory"/>
     <filter class="solr.TurkishLowerCaseFilterFactory"/>
-    <filter class="org.apache.lucene.analysis.tr.ZemberekStemFilterFactory" cache="zemberek/top-20K-words.txt" dictionary="zemberek/master-dictionary.dict,zemberek/secondary-dictionary.dict,zemberek/non-tdk.dict,zemberek/proper.dict" strategy="max"/>
+    <filter class="org.apache.lucene.analysis.tr.ZemberekStemFilterFactory" cache="tr/top-20K-words.txt" dictionary="tr/master-dictionary.dict,tr/secondary-dictionary.dict,tr/non-tdk.dict,tr/proper.dict" strategy="max"/>
   </analyzer>
 </fieldType>
 ```
@@ -50,14 +52,14 @@ This filter intended to be used at query time to allow *diacritics-insensitive s
      <tokenizer class="solr.StandardTokenizerFactory"/>
      <filter class="solr.ApostropheFilterFactory"/>
      <filter class="solr.TurkishLowerCaseFilterFactory"/>
-     <filter class="org.apache.lucene.analysis.tr.ZemberekStemFilterFactory" cache="zemberek/top-20K-words.txt" dictionary="zemberek/master-dictionary.dict,zemberek/secondary-dictionary.dict,zemberek/non-tdk.dict,zemberek/proper.dict" strategy="max"/>
+     <filter class="org.apache.lucene.analysis.tr.ZemberekStemFilterFactory" cache="tr/top-20K-words.txt" dictionary="tr/master-dictionary.dict,tr/secondary-dictionary.dict,tr/non-tdk.dict,tr/proper.dict" strategy="max"/>
    </analyzer>
    <analyzer type="query">
      <tokenizer class="solr.StandardTokenizerFactory"/>
      <filter class="solr.ApostropheFilterFactory"/>
      <filter class="solr.TurkishLowerCaseFilterFactory"/>
      <filter class="org.apache.lucene.analysis.tr.TurkishDeasciifyFilterFactory" preserveOriginal="true"/>
-     <filter class="org.apache.lucene.analysis.tr.ZemberekStemFilterFactory" cache="zemberek/top-20K-words.txt" dictionary="zemberek/master-dictionary.dict,zemberek/secondary-dictionary.dict,zemberek/non-tdk.dict,zemberek/proper.dict" strategy="max"/>
+     <filter class="org.apache.lucene.analysis.tr.ZemberekStemFilterFactory" cache="tr/top-20K-words.txt" dictionary="tr/master-dictionary.dict,tr/secondary-dictionary.dict,tr/non-tdk.dict,tr/proper.dict" strategy="max"/>
    </analyzer>
  </fieldType>
  ```

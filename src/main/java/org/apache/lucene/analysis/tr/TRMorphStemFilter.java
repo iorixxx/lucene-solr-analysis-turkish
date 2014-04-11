@@ -70,9 +70,13 @@ public final class TRMorphStemFilter extends TokenFilter {
 
     @Override
     public boolean incrementToken() throws IOException {
+
         if (!input.incrementToken()) return false;
         if (keywordAttribute.isKeyword()) return true;
 
+        /**
+         * copied from {@link StemmerOverrideFilter#incrementToken}
+         */
         if (cache != null) {
             final BytesRef stem = cache.get(termAttribute.buffer(), termAttribute.length(), scratchArc, fstReader);
             if (stem != null) {
@@ -82,14 +86,19 @@ public final class TRMorphStemFilter extends TokenFilter {
                     termAttribute.copyBuffer(spare.chars, spare.offset, spare.length);
                 }
                 termAttribute.setLength(spare.length);
+                return true;
             }
-        } else {
-            final String term = termAttribute.toString();
-            final String s = stem(term, aggregation, lookup_fst);
-            // If not stemmed, don't waste the time adjusting the token.
-            if ((s != null) && !s.equals(term))
-                termAttribute.setEmpty().append(s);
         }
+
+        /**
+         *  copied from {@link org.apache.lucene.analysis.br.BrazilianStemFilter#incrementToken}
+         */
+        final String term = termAttribute.toString();
+        final String s = stem(term, aggregation, lookup_fst);
+        // If not stemmed, don't waste the time adjusting the token.
+        if ((s != null) && !s.equals(term))
+            termAttribute.setEmpty().append(s);
+
         return true;
     }
 
