@@ -11,10 +11,11 @@ for Turkish language However this stemmer performs poorly and has funny collisio
 
 Currently we have three TokenFilters. Detailed documentation is on the way.
 
-1. **TRMorphStemFilter(Factory)**
+1.
+**TRMorphStemFilter(Factory)**
 Turkish Stemmer based on [TRmorph](https://github.com/coltekin/TRmorph)
 This one is not production ready yet. It requires Operating System specific [foma](https://code.google.com/p/foma/) executable.
-I couldn't find an elegant way to convert `foma` to java.
+I couldn't find an elegant way to convert `foma` to java. I am using *"executing shell commands in Java to call `flookup`"* workaround advised in [FAQ] (http://code.google.com/p/foma/wiki/FAQ). If you know something better please let me know.
 
 ``` xml
 <fieldType name="text_tr_morph" class="solr.TextField" positionIncrementGap="100">
@@ -27,10 +28,10 @@ I couldn't find an elegant way to convert `foma` to java.
 </fieldType>
 ```
 
-2. **ZemberekStemFilter(Factory)**
+2.
+**ZemberekStemFilter(Factory)**
 Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp)
-
-Download [tr](https://github.com/iorixxx/zemberek-nlp/tree/master/morphology/src/main/resources/tr)folder which contains dictionary files, and put it under solr/collection1/conf.
+Download [tr](https://github.com/iorixxx/zemberek-nlp/tree/master/morphology/src/main/resources/tr) folder which contains dictionary files, and put it under solr/collection1/conf.
 You need three jars : zemberek-morphology-0.9.1.jar zemberek-core-0.9.1.jar TurkishAnalysis-4.7.1.jar inside solr/collection1/lib directory.
 
 ``` xml
@@ -44,7 +45,8 @@ You need three jars : zemberek-morphology-0.9.1.jar zemberek-core-0.9.1.jar Turk
 </fieldType>
 ```
 
-3. **TurkishDeasciifyFilter(Factory)**
+3.
+**TurkishDeasciifyFilter(Factory)**
 Translation of [Turkish Deasciifier](https://github.com/emres/turkish-deasciifier) from Python to Java.
 This filter intended to be used at query time to allow *diacritics-insensitive search* for Turkish.
 ``` xml
