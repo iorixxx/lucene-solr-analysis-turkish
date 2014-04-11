@@ -29,7 +29,8 @@ I couldn't find an elegant way to convert `foma` to java.
 
 2. **ZemberekStemFilter(Factory)**
 Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp)
-Download tr folder which contains dictionary files, from [tr](https://github.com/iorixxx/zemberek-nlp/tree/master/morphology/src/main/resources/tr) and put it under solr/collection1/conf/
+
+Download [tr](https://github.com/iorixxx/zemberek-nlp/tree/master/morphology/src/main/resources/tr)folder which contains dictionary files, and put it under solr/collection1/conf.
 You need three jars : zemberek-morphology-0.9.1.jar zemberek-core-0.9.1.jar TurkishAnalysis-4.7.1.jar inside solr/collection1/lib directory.
 
 ``` xml
