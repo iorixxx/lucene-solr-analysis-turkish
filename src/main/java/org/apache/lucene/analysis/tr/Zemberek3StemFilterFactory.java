@@ -37,18 +37,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Factory for {@link ZemberekStemFilter}.
+ * Factory for {@link Zemberek3StemFilter}.
  * <pre class="prettyprint">
  * &lt;fieldType name="text_tr_zemberek" class="solr.TextField" positionIncrementGap="100"&gt;
  * &lt;analyzer&gt;
  * &lt;tokenizer class="solr.StandardTokenizerFactory"/&gt;
  * &lt;filter class="solr.ApostropheFilterFactory"/&gt;
  * &lt;filter class="solr.TurkishLowerCaseFilterFactory"/&gt;
- * &lt;filter class="solr.ZemberekStemFilterFactory" dictionary="master-dictionary.dict,secondary-dictionary.dict,non-tdk.dict,proper.dict" strategy="max"/&gt;
+ * &lt;filter class="solr.Zemberek3StemFilterFactory" dictionary="master-dictionary.dict,secondary-dictionary.dict,non-tdk.dict,proper.dict" strategy="max"/&gt;
  * &lt;/analyzer&gt;
  * &lt;/fieldType&gt;</pre>
  */
-public class ZemberekStemFilterFactory extends TokenFilterFactory implements ResourceLoaderAware {
+public class Zemberek3StemFilterFactory extends TokenFilterFactory implements ResourceLoaderAware {
 
     private MorphParser parser;
     private StemmerOverrideFilter.StemmerOverrideMap cache;
@@ -58,7 +58,7 @@ public class ZemberekStemFilterFactory extends TokenFilterFactory implements Res
     private final String dictionaryFiles;
     private final String cacheFiles;
 
-    public ZemberekStemFilterFactory(Map<String, String> args) {
+    public Zemberek3StemFilterFactory(Map<String, String> args) {
         super(args);
         dictionaryFiles = require(args, "dictionary");
         strategy = get(args, "strategy", "max");
@@ -97,7 +97,7 @@ public class ZemberekStemFilterFactory extends TokenFilterFactory implements Res
                 for (String file : files) {
                     List<String> list = getLines(loader, file.trim());
                     for (String line : list) {
-                        builder.add(line, ZemberekStemFilter.stem(line, parser, strategy));
+                        builder.add(line, Zemberek3StemFilter.stem(line, parser, strategy));
                     }
                 }
                 cache = builder.build();
@@ -107,7 +107,7 @@ public class ZemberekStemFilterFactory extends TokenFilterFactory implements Res
 
     @Override
     public TokenStream create(TokenStream input) {
-        ZemberekStemFilter filter = new ZemberekStemFilter(input, parser, strategy);
+        Zemberek3StemFilter filter = new Zemberek3StemFilter(input, parser, strategy);
         if (cache != null) {
             filter.setCache(cache);
         }

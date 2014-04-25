@@ -30,14 +30,14 @@ import java.util.Map;
  *     &lt;tokenizer class="solr.StandardTokenizerFactory"/&gt;
  *     &lt;filter class="solr.ApostropheFilterFactory"/&gt;
  *     &lt;filter class="solr.TurkishLowerCaseFilterFactory"/&gt;
- *     &lt;filter class="solr.ZemberekStemFilterFactory"/&gt;
+ *     &lt;filter class="solr.Zemberek3StemFilterFactory"/&gt;
  *   &lt;/analyzer&gt;
  *   &lt;analyzer type="query"&gt;
  *     &lt;tokenizer class="solr.StandardTokenizerFactory"/&gt;
  *     &lt;filter class="solr.ApostropheFilterFactory"/&gt;
  *     &lt;filter class="solr.TurkishLowerCaseFilterFactory"/&gt;
  *     &lt;filter class="solr.TurkishDeasciifyFilterFactory" preserveOriginal="true"/&gt;
- *     &lt;filter class="solr.ZemberekStemFilterFactory"/&gt;
+ *     &lt;filter class="solr.Zemberek3StemFilterFactory"/&gt;
  *   &lt;/analyzer&gt;
  * &lt;/fieldType&gt;</pre>
  */

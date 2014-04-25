@@ -37,7 +37,7 @@ import java.util.TreeSet;
 /**
  * Stemmer based on <a href="https://github.com/ahmetaa/zemberek-nlp">Zemberek3</a>
  */
-public final class ZemberekStemFilter extends TokenFilter {
+public final class Zemberek3StemFilter extends TokenFilter {
 
     private StemmerOverrideFilter.StemmerOverrideMap cache;
     private FST.BytesReader fstReader;
@@ -51,7 +51,7 @@ public final class ZemberekStemFilter extends TokenFilter {
     private final CharTermAttribute termAttribute = addAttribute(CharTermAttribute.class);
     private final KeywordAttribute keywordAttribute = addAttribute(KeywordAttribute.class);
 
-    public ZemberekStemFilter(TokenStream input, MorphParser parser, String aggregation) {
+    public Zemberek3StemFilter(TokenStream input, MorphParser parser, String aggregation) {
         super(input);
         this.parser = parser;
         this.aggregation = aggregation;
