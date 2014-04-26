@@ -1,7 +1,10 @@
 package org.apache.lucene.analysis.tr;
 
 import net.zemberek.erisim.Zemberek;
+import net.zemberek.islemler.KelimeKokFrekansKiyaslayici;
+import net.zemberek.islemler.cozumleme.CozumlemeSeviyesi;
 import net.zemberek.tr.yapi.TurkiyeTurkcesi;
+import net.zemberek.yapi.Kelime;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
@@ -15,6 +18,8 @@ import org.apache.lucene.util.Version;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +29,7 @@ import java.util.Map;
 public class Zemberek2DeasciifyFilterFactory extends TokenFilterFactory {
 
     private final Zemberek zemberek = new Zemberek(new TurkiyeTurkcesi());
-
+    static final String DEASCII_TOKEN_TYPE = "<DEASCII>";
 
     public Zemberek2DeasciifyFilterFactory(Map<String, String> args) {
         super(args);
@@ -51,8 +56,6 @@ public class Zemberek2DeasciifyFilterFactory extends TokenFilterFactory {
         private final TypeAttribute typeAtt = addAttribute(TypeAttribute.class);
         private final PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
 
-        private static final String DEASCII_TOKEN_TYPE = "<DEASCII>";
-
         private String[] stack = null;
         private int index = 0;
         private AttributeSource.State current = null;
@@ -75,7 +78,21 @@ public class Zemberek2DeasciifyFilterFactory extends TokenFilterFactory {
             if (!input.incrementToken()) return false;
             if (keywordAttribute.isKeyword()) return true;
 
-            stack = zemberek.asciidenTurkceye(keywordAttribute.toString());
+            // stack = zemberek.asciidenTurkceye(termAttribute.toString());
+
+            Kelime[] kelimeler = zemberek.asciiToleransliCozumleyici().cozumle(termAttribute.toString(), CozumlemeSeviyesi.TUM_KOKLER);
+            Arrays.sort(kelimeler, new KelimeKokFrekansKiyaslayici());
+
+            ArrayList<String> olusumlar = new ArrayList<>(kelimeler.length);
+
+            for (Kelime kelime : kelimeler) {
+                String olusum = kelime.icerikStr();
+                if (!olusumlar.contains(olusum))
+                    olusumlar.add(olusum);
+            }
+
+            olusumlar.remove(termAttribute.toString());
+            stack = olusumlar.toArray(new String[olusumlar.size()]);
 
             index = 0;
             current = captureState();
@@ -104,7 +121,7 @@ public class Zemberek2DeasciifyFilterFactory extends TokenFilterFactory {
 
     public static void main(String[] args) throws IOException {
 
-        StringReader reader = new StringReader("kus ortaklar çekişme");
+        StringReader reader = new StringReader("kus asisi ortaklar çekişme masali");
 
         Map<String, String> map = new HashMap<>();
 

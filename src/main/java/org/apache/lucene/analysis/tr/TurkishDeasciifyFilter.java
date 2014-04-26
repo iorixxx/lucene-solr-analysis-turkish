@@ -21,6 +21,7 @@ import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
+import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import org.apache.lucene.analysis.tr.util.PatternTableFactory;
 import org.apache.lucene.analysis.util.CharArrayMap;
 
@@ -34,6 +35,7 @@ import static org.apache.lucene.analysis.tr.util.PatternTableFactory.*;
  */
 public final class TurkishDeasciifyFilter extends TokenFilter {
 
+    private final TypeAttribute typeAtt = addAttribute(TypeAttribute.class);
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
     private final PositionIncrementAttribute posIncAttr = addAttribute(PositionIncrementAttribute.class);
     private final boolean preserveOriginal;
@@ -197,8 +199,9 @@ public final class TurkishDeasciifyFilter extends TokenFilter {
     /**
      * Adds necessary accents to the words in the region.
      */
-    public void convert_to_turkish(char[] turkish_string, int length) {
+    public boolean convert_to_turkish(char[] turkish_string, int length) {
 
+        boolean returnValue = false;
         boolean flag = true;
 
         for (int i = 0; i < length; i++) {
@@ -213,9 +216,12 @@ public final class TurkishDeasciifyFilter extends TokenFilter {
                         flag = false;
                     }
                     turkish_string[i] = turkish_toggle_accent_table.get(c);
+                    returnValue = true;
                 }
             }
         }
+
+        return returnValue;
     }
 
 
@@ -231,7 +237,8 @@ public final class TurkishDeasciifyFilter extends TokenFilter {
         if (input.incrementToken()) {
             final char[] buffer = termAtt.buffer();
             final int length = termAtt.length();
-            convert_to_turkish(buffer, length);
+            if (convert_to_turkish(buffer, length))
+                typeAtt.setType(Zemberek2DeasciifyFilterFactory.DEASCII_TOKEN_TYPE);
             return true;
         } else {
             return false;
