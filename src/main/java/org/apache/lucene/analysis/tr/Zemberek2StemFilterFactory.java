@@ -159,7 +159,7 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
 
         Zemberek2StemFilterFactory factory = new Zemberek2StemFilterFactory(map);
 
-        TokenStream stream = factory.create(new WhitespaceTokenizer(Version.LUCENE_47, reader));
+        TokenStream stream = factory.create(new WhitespaceTokenizer(Version.LUCENE_48, reader));
 
         CharTermAttribute termAttribute = stream.getAttribute(CharTermAttribute.class);
 

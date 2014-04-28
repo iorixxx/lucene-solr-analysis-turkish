@@ -128,7 +128,7 @@ public class Zemberek2DeasciifyFilterFactory extends TokenFilterFactory {
 
         Zemberek2DeasciifyFilterFactory factory = new Zemberek2DeasciifyFilterFactory(map);
 
-        TokenStream stream = factory.create(new WhitespaceTokenizer(Version.LUCENE_47, reader));
+        TokenStream stream = factory.create(new WhitespaceTokenizer(Version.LUCENE_48, reader));
 
         CharTermAttribute termAttribute = stream.getAttribute(CharTermAttribute.class);
 

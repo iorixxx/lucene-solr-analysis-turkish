@@ -251,7 +251,7 @@ public final class PatternTableFactory {
 
                     }}
             );
-    static final Version version = Version.LUCENE_47;
+    static final Version version = Version.LUCENE_48;
     static final boolean ignoreCase = false;
 
     private PatternTableFactory() {
