@@ -34,6 +34,12 @@ public class TestTurkishDeasciifyFilter extends BaseTokenStreamTestCase {
         return new MockTokenizer(new StringReader(input));
     }
 
+  public void testDeAscii2() throws Exception {
+    TokenStream stream = whitespaceMockTokenizer("tatlises akgunduz sakip cernobil baslattigi dayanikliklarini");
+    stream = new TurkishDeasciifyFilter(stream, false);
+    assertTokenStreamContents(stream, new String[]{"tatlıses", "akgündüz", "sakıp", "çernobil", "başlattığı", "dayanıklıklarını"});
+  }
+
     public void testDeAscii() throws Exception {
         TokenStream stream = whitespaceMockTokenizer("kus fadil akgunduz dogalgaz ahmet");
         stream = new TurkishDeasciifyFilter(stream, false);

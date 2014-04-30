@@ -18,23 +18,9 @@ import java.util.*;
 public class SolrSearcher {
 
   public SolrSearcher(String solrURL, String outputPath, String queryCSV) throws IOException {
-
     server = new HttpSolrServer(solrURL);
-
     this.outputPath = outputPath;
-
-    List<String> lines = Files.readAllLines(new File(queryCSV).toPath(), StandardCharsets.UTF_8);
-
-    for (String line : lines) {
-      String[] parts = line.split("\t");
-      if (parts.length != 3) throw new RuntimeException("line should have three parts " + Arrays.toString(parts));
-
-      String id = parts[0];
-      String title = parts[1];
-      String desc = parts[2];
-      Topic topic = new Topic(id, title, desc);
-      topics.add(topic);
-    }
+    topics = getTopics(queryCSV);
   }
 
   public enum QueryLength {
@@ -64,18 +50,34 @@ public class SolrSearcher {
 
   private static final Map<Character, Character> characterMap = new HashMap<>();
 
-  private HttpSolrServer server;
+  private final HttpSolrServer server;
   private String defaultField = null;
   private final String outputPath;
-
-  private ArrayList<Topic> topics = new ArrayList<>();
+  private final List<Topic> topics;
 
   private PrintWriter output;
 
   private QueryLength queryLength = QueryLength.Medium;
 
-  public List<Topic> getTopics() {
-    return this.topics;
+  public static List<Topic> getTopics(String queryCSV) throws IOException {
+
+    List<Topic> topics = new ArrayList<>();
+
+    List<String> lines = Files.readAllLines(new File(queryCSV).toPath(), StandardCharsets.UTF_8);
+
+    for (String line : lines) {
+      String[] parts = line.split("\t");
+      if (parts.length != 3) throw new RuntimeException("line should have three parts " + Arrays.toString(parts));
+
+      String id = parts[0];
+      String title = parts[1];
+      String desc = parts[2];
+      Topic topic = new Topic(id, title, desc);
+      topics.add(topic);
+    }
+
+    lines.clear();
+    return topics;
   }
 
   public void setQueryLength(QueryLength queryLength) {
@@ -136,11 +138,11 @@ public class SolrSearcher {
     for (Topic topic : topics) {
 
       if (queryLength == QueryLength.Short)
-        search(asciify(topic.title), topic.id);
+        search(asciifyAndLowerCase(topic.title), topic.id);
       else if (queryLength == QueryLength.Medium)
-        search(asciify(topic.desc), topic.id);
+        search(asciifyAndLowerCase(topic.desc), topic.id);
       else if (queryLength == QueryLength.QMS)
-        search(asciify(topic.title + " " + topic.desc), topic.id);
+        search(asciifyAndLowerCase(topic.title + " " + topic.desc), topic.id);
     }
     output.close();
     return getRunName();
@@ -158,19 +160,17 @@ public class SolrSearcher {
         builder.append(characterMap.get(c));
       else
         builder.append(c);
-
-
     }
+    return builder.toString();
+  }
 
-    return builder.toString().toLowerCase(Locale.US);
-
+  public static String asciifyAndLowerCase(String string) {
+    return asciify(string).toLowerCase(Locale.US);
   }
 
   static {
     for (int j = 0; j < TURKISH_CHARACTERS.length; j++)
       characterMap.put(TURKISH_CHARACTERS[j], ENGLISH_CHARACTERS[j]);
-
-
   }
 
   private static void printAccentedLettersTable() {
@@ -250,25 +250,25 @@ public class SolrSearcher {
 
   public static void main(String[] args) throws SolrServerException, IOException {
 
-    printMetricTable("bpref", QueryLength.Medium, "/Users/iorixxx/Dropbox/diacritic/");
+    printMetricTable("bpref", QueryLength.Short, "/Users/iorixxx/Dropbox/diacritic/");
 
-   // if (true) return;
+   if (true) return;
 
     SolrSearcher searcher = new SolrSearcher(
         "http://localhost:8983/solr/deascii/",
         "/Users/iorixxx/Dropbox/diacritic/",
         "/Users/iorixxx/Dropbox/queries.csv/"
     );
-    searcher.setQueryLength(QueryLength.Medium);
+    searcher.setQueryLength(QueryLength.Short);
 
 
     for (String stemmer : stemmers) {
 
-      searcher.setDefaultField("tr_" + stemmer);
-      System.out.println(searcher.search());
+    //  searcher.setDefaultField("tr_" + stemmer);
+    //  System.out.println(searcher.search());
 
-      searcher.setDefaultField("ascii_" + stemmer);
-      System.out.println(searcher.searchAsciify());
+    //  searcher.setDefaultField("ascii_" + stemmer);
+   //   System.out.println(searcher.searchAsciify());
 
       for (String deasciifier : deasciifiers) {
         searcher.setDefaultField(deasciifier + "_" + stemmer);
