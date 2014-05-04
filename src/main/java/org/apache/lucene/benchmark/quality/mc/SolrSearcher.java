@@ -1,4 +1,21 @@
-package org.apache.lucene;
+package org.apache.lucene.benchmark.quality.mc;
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -23,9 +40,23 @@ public class SolrSearcher {
     topics = getTopics(queryCSV);
   }
 
-  public enum QueryLength {
+  static class Topic {
+
+    final String id;
+    final String title;
+    final String desc;
+
+    public Topic(String id, String title, String desc) {
+      this.id = id;
+      this.title = title;
+      this.desc = desc;
+    }
+  }
+
+  static enum QueryLength {
     Short, Medium, QMS;
 
+    @Override
     public String toString() {
       switch (this) {
         case Short:
@@ -107,7 +138,7 @@ public class SolrSearcher {
       String docno = (String) document.getFieldValue("id");
       Float score = (Float) document.getFieldValue("score");
 
-      output.println(QueryID + "\t0\tMilliyet_0105_v00_" + docno.trim() + "\t" + i + "\t" + score + "\tSTANDARD");
+      output.println(QueryID + "\tQ0\tMilliyet_0105_v00_" + docno.trim() + "\t" + i + "\t" + score + "\t" + getRunName());
       i++;
     }
 
@@ -194,99 +225,34 @@ public class SolrSearcher {
   static final String[] deasciifiers = {"zemberek2_deascii", "turkish_deascii"};
   static final String[] stemmers = {"ns", "f5", "snowball", "zemberek2"};
 
-  /**
-   * Reads output of trec_eval program, and creates performance metric LateX table
-   *
-   * @param metric      map, P@5, etc.
-   * @param queryLength Medium, Short, etc.
-   * @param outputPath  directory where trec_eval's outputs are saved.
-   * @throws IOException
-   */
-  public static void printMetricTable(String metric, SolrSearcher.QueryLength queryLength, String outputPath) throws IOException {
-
-    for (String stemmer : stemmers) {
-
-      System.out.print(stemmer + " & ");
-
-      String fileName = "out_" + "tr_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
-      System.out.print(getMetric(metric, outputPath + fileName) + " & ");
-
-
-      fileName = "out_" + "ascii_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
-      System.out.print(getMetric(metric, outputPath + fileName) + " & ");
-
-      int i = 1;
-      for (String deasciifier : deasciifiers) {
-        fileName = "out_" + deasciifier + "_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
-        System.out.print(getMetric(metric, outputPath + fileName));
-
-        i++;
-
-        if (i == deasciifiers.length )
-          System.out.print(" & ");
-        else
-          System.out.print(" \\\\ ");
-
-      }
-
-      System.out.println();
-      System.out.println("\\hline");
-    }
-  }
-
-  static String getMetric(String metric, String fileName) throws IOException {
-    List<String> lines = Files.readAllLines(new File(fileName).toPath(), StandardCharsets.US_ASCII);
-
-    for (String line : lines) {
-      if (line.startsWith(metric) && line.contains("all")) {
-        String[] parts = line.split("\\s+");
-        if (parts.length != 3) throw new RuntimeException("line should have three parts " + Arrays.toString(parts));
-        return parts[2];
-      }
-    }
-
-    throw new RuntimeException(metric + " metric cannot be found!");
-  }
-
   public static void main(String[] args) throws SolrServerException, IOException {
-
-    printMetricTable("bpref", QueryLength.Short, "/Users/iorixxx/Dropbox/diacritic/");
-
-   if (true) return;
 
     SolrSearcher searcher = new SolrSearcher(
         "http://localhost:8983/solr/deascii/",
         "/Users/iorixxx/Dropbox/diacritic/",
         "/Users/iorixxx/Dropbox/queries.csv/"
     );
-    searcher.setQueryLength(QueryLength.Short);
 
+    for (final QueryLength queryLength : new QueryLength[]{QueryLength.Short, QueryLength.Medium}) {
 
-    for (String stemmer : stemmers) {
+      searcher.setQueryLength(queryLength);
 
-    //  searcher.setDefaultField("tr_" + stemmer);
-    //  System.out.println(searcher.search());
+      for (String stemmer : stemmers) {
 
-    //  searcher.setDefaultField("ascii_" + stemmer);
-   //   System.out.println(searcher.searchAsciify());
+        searcher.setDefaultField("tr_" + stemmer);
+        System.out.println(searcher.search());
 
-      for (String deasciifier : deasciifiers) {
-        searcher.setDefaultField(deasciifier + "_" + stemmer);
+        searcher.setDefaultField("ascii_" + stemmer);
         System.out.println(searcher.searchAsciify());
+
+        for (String deasciifier : deasciifiers) {
+
+          searcher.setDefaultField(deasciifier + "_" + stemmer);
+          System.out.println(searcher.searchAsciify());
+
+        }
       }
     }
-  }
 
-  public static class Topic {
-
-    final String id;
-    final String title;
-    final String desc;
-
-    public Topic(String id, String title, String desc) {
-      this.id = id;
-      this.title = title;
-      this.desc = desc;
-    }
   }
 }

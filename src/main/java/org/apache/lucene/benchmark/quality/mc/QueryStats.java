@@ -1,4 +1,21 @@
-package org.apache.lucene;
+package org.apache.lucene.benchmark.quality.mc;
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import net.zemberek.erisim.Zemberek;
 import net.zemberek.tr.yapi.TurkiyeTurkcesi;
@@ -17,9 +34,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by iorixxx on 4/29/14.
+ * Query statistics
  */
-public class Analiz {
+public class QueryStats {
 
   static private final Zemberek zemberek = new Zemberek(new TurkiyeTurkcesi());
 
@@ -52,7 +69,7 @@ public class Analiz {
     int changedTokens = 0;
     for (SolrSearcher.Topic topic : topics) {
 
-      String input = topic.desc;
+      String input = topic.title;
 
       List<String> terms = getTerms(input);
 
@@ -71,13 +88,13 @@ public class Analiz {
           if (trList.size() > 2)
             System.out.println(term + " " + asciiTerm);
 
-         // if(!trList.contains(term))
-         //   System.out.println(term + " " + asciiTerm + " trList " +  trList) ;
+          // if(!trList.contains(term))
+          //   System.out.println(term + " " + asciiTerm + " trList " +  trList) ;
         }
       }
 
-     // if (flag)
-      //  System.out.println(topic.id + " " + input);
+      if (flag)
+        System.out.println(topic.id + " " + input);
     }
 
     System.out.println("total count = " + totalCount);
