@@ -54,7 +54,8 @@ You need two jars : zemberek-cekirdek-2.1.3.jar zemberek-tr-2.1.3.jar TurkishAna
 **Zemberek3StemFilter(Factory)**
 Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp)
 Download [tr](https://github.com/iorixxx/zemberek-nlp/tree/master/morphology/src/main/resources/tr) folder which contains dictionary files, and put it under solr/collection1/conf.
-You need three jars : zemberek-morphology-0.9.1.jar zemberek-core-0.9.1.jar TurkishAnalysis-4.8.0.jar inside solr/collection1/lib directory.
+You need three jars : zemberek-morphology-0.9.1.jar zemberek-core-0.9.1.jar TurkishAnalysis-4.8.0.jar inside solr/collection1/lib directory. Please note that zemberek-* jars need to generated from [my fork](https://github.com/iorixxx/zemberek-nlp/).
+Here is the [difference](https://github.com/iorixxx/zemberek-nlp/commit/3926bcf3bc719da874e72089d854532cde37d42b) over original repository.
 
 ``` xml
 <fieldType name="text_tr_zemberek3" class="solr.TextField" positionIncrementGap="100">
