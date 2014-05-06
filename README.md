@@ -63,7 +63,7 @@ Here is the [difference](https://github.com/iorixxx/zemberek-nlp/commit/3926bcf3
     <tokenizer class="solr.StandardTokenizerFactory"/>
     <filter class="solr.ApostropheFilterFactory"/>
     <filter class="solr.TurkishLowerCaseFilterFactory"/>
-    <filter class="org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory" cache="tr/top-20K-words.txt" dictionary="tr/master-dictionary.dict,tr/secondary-dictionary.dict,tr/non-tdk.dict,tr/proper.dict" strategy="max"/>
+    <filter class="org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory" strategy="maxLength" cache="tr/top-20K-words.txt" dictionary="tr/master-dictionary.dict,tr/secondary-dictionary.dict,tr/non-tdk.dict,tr/proper.dict"/>
   </analyzer>
 </fieldType>
 ```
@@ -78,14 +78,14 @@ This filter intended to be used at query time to allow *diacritics-insensitive s
      <tokenizer class="solr.StandardTokenizerFactory"/>
      <filter class="solr.ApostropheFilterFactory"/>
      <filter class="solr.TurkishLowerCaseFilterFactory"/>
-     <filter class="org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory" cache="tr/top-20K-words.txt" dictionary="tr/master-dictionary.dict,tr/secondary-dictionary.dict,tr/non-tdk.dict,tr/proper.dict" strategy="max"/>
+     <filter class="org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory" strategy="maxLength" cache="tr/top-20K-words.txt" dictionary="tr/master-dictionary.dict,tr/secondary-dictionary.dict,tr/non-tdk.dict,tr/proper.dict"/>
    </analyzer>
    <analyzer type="query">
      <tokenizer class="solr.StandardTokenizerFactory"/>
      <filter class="solr.ApostropheFilterFactory"/>
      <filter class="solr.TurkishLowerCaseFilterFactory"/>
      <filter class="org.apache.lucene.analysis.tr.TurkishDeasciifyFilterFactory" preserveOriginal="true"/>
-     <filter class="org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory" cache="tr/top-20K-words.txt" dictionary="tr/master-dictionary.dict,tr/secondary-dictionary.dict,tr/non-tdk.dict,tr/proper.dict" strategy="max"/>
+     <filter class="org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory" strategy="maxLength" cache="tr/top-20K-words.txt" dictionary="tr/master-dictionary.dict,tr/secondary-dictionary.dict,tr/non-tdk.dict,tr/proper.dict"/>
    </analyzer>
  </fieldType>
  ```

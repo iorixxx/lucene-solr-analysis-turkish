@@ -42,12 +42,12 @@ import java.util.Map;
 /**
  * Factory for {@link Zemberek3StemFilter}.
  * <pre class="prettyprint">
- * &lt;fieldType name="text_tr_zemberek" class="solr.TextField" positionIncrementGap="100"&gt;
+ * &lt;fieldType name="zemberek3" class="solr.TextField" positionIncrementGap="100"&gt;
  * &lt;analyzer&gt;
  * &lt;tokenizer class="solr.StandardTokenizerFactory"/&gt;
  * &lt;filter class="solr.ApostropheFilterFactory"/&gt;
  * &lt;filter class="solr.TurkishLowerCaseFilterFactory"/&gt;
- * &lt;filter class="solr.Zemberek3StemFilterFactory" dictionary="master-dictionary.dict,secondary-dictionary.dict,non-tdk.dict,proper.dict" strategy="max"/&gt;
+ * &lt;filter class="solr.Zemberek3StemFilterFactory" strategy="maxLength" dictionary="master-dictionary.dict,secondary-dictionary.dict,non-tdk.dict,proper.dict"/&gt;
  * &lt;/analyzer&gt;
  * &lt;/fieldType&gt;</pre>
  */
@@ -64,7 +64,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
     public Zemberek3StemFilterFactory(Map<String, String> args) {
         super(args);
         dictionaryFiles = require(args, "dictionary");
-        strategy = get(args, "strategy", "max");
+        strategy = get(args, "strategy", "maxLength");
         cacheFiles = get(args, "cache");
 
         if (!args.isEmpty()) {
@@ -122,9 +122,10 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
         List<MorphParse> parses = parser.parse(word);
         System.out.println("Word = " + word + " has " + parses.size() + " many solutions");
 
+        if (parses.size() == 0) return;
+
         System.out.println("Parses: ");
 
-        parses = Zemberek3StemFilter.selectMorphemes(parses, "minMorpheme");
         for (MorphParse parse : parses) {
             System.out.println("number of morphemes = " + parse.inflectionalGroups.size());
             System.out.println(parse.formatLong());
@@ -136,6 +137,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
             System.out.println("-------------------");
         }
 
+        System.out.println("final selected stem : " + Zemberek3StemFilter.stem(parses, "maxLength"));
         System.out.println("==================================");
     }
 

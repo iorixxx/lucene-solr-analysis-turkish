@@ -152,9 +152,9 @@ public final class Zemberek3StemFilter extends TokenFilter {
         List<String> candidates = morphToString(alternatives, "lemmas");
 
         switch (aggregation) {
-            case "max":
+            case "maxLength":
                 return Collections.max(candidates, STRING_LENGTH_COMPARATOR);
-            case "min":
+            case "minLength":
                 return Collections.min(candidates, STRING_LENGTH_COMPARATOR);
             default:
                 throw new RuntimeException("unknown strategy " + aggregation);
