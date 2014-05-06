@@ -30,14 +30,18 @@ import zemberek.morphology.parser.MorphParse;
 import zemberek.morphology.parser.MorphParser;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.TreeSet;
 
 /**
  * Stemmer based on <a href="https://github.com/ahmetaa/zemberek-nlp">Zemberek3</a>
  */
 public final class Zemberek3StemFilter extends TokenFilter {
+
+    private static final StringLengthComparator STRING_LENGTH_COMPARATOR = new StringLengthComparator();
+    private static final MorphemeComparator MORPHEME_COMPARATOR = new MorphemeComparator();
 
     private StemmerOverrideFilter.StemmerOverrideMap cache;
     private FST.BytesReader fstReader;
@@ -62,37 +66,99 @@ public final class Zemberek3StemFilter extends TokenFilter {
         fstReader = cache.getBytesReader();
     }
 
-    static String stem(String word, MorphParser parser, String aggregation) {
-
-        List<MorphParse> parses = parser.parse(word);
-        if (parses.size() == 0) return word;
-
-
-        TreeSet<String> lemmaSet = new TreeSet<>(new Comparator<String>() {
-            @Override
-            public int compare(String a, String b) {
-                return a.length() - b.length();
-            }
-        }
-        );
-
-
-        for (MorphParse parse : parses) {
-            lemmaSet.addAll(parse.getLemmas());
+    private static class StringLengthComparator implements Comparator<String> {
+        @Override
+        public int compare(String a, String b) {
+            return a.length() - b.length();
         }
 
-        if (lemmaSet.size() == 1) return lemmaSet.first();
+    }
+
+    private static class MorphemeComparator implements Comparator<MorphParse> {
+        @Override
+        public int compare(MorphParse o1, MorphParse o2) {
+            if (o1 == null || o2 == null) return -1;
+            return o1.inflectionalGroups.size() - o2.inflectionalGroups.size();
+        }
+    }
+
+
+    static List<MorphParse> selectMorphemes(List<MorphParse> parses, String strategy) {
+
+        // if 0 or 1
+        if (parses.size() < 2) return parses;
+
+        List<MorphParse> list;
+
+        switch (strategy) {
+            case "all":
+                return parses;
+            case "maxMorpheme":
+                list = new ArrayList<>();
+                MorphParse maxMorphParse = Collections.max(parses, MORPHEME_COMPARATOR);
+                int maxMorphParseLength = maxMorphParse.inflectionalGroups.size();
+                for (MorphParse parse : parses)
+                    if (parse.inflectionalGroups.size() == maxMorphParseLength)
+                        list.add(parse);
+
+                return list;
+            case "minMorpheme":
+                list = new ArrayList<>();
+                MorphParse minMorphParse = Collections.min(parses, MORPHEME_COMPARATOR);
+                int minMorphParseLength = minMorphParse.inflectionalGroups.size();
+                for (MorphParse parse : parses)
+                    if (parse.inflectionalGroups.size() == minMorphParseLength)
+                        list.add(parse);
+
+                return list;
+            default:
+                throw new RuntimeException("unknown strategy " + strategy);
+
+        }
+    }
+
+    static List<String> morphToString(List<MorphParse> parses, String methodName) {
+
+        List<String> list = new ArrayList<>();
+
+        switch (methodName) {
+            case "stems":
+                for (MorphParse parse : parses)
+                    list.addAll(parse.getStems());
+                return list;
+            case "lemmas":
+                for (MorphParse parse : parses)
+                    list.addAll(parse.getLemmas());
+                return list;
+            case "lemma":
+                for (MorphParse parse : parses)
+                    list.add(parse.getLemma());
+                return list;
+            case "root":
+                for (MorphParse parse : parses)
+                    list.add(parse.root);
+                return list;
+            default:
+                throw new RuntimeException("unknown method name " + methodName);
+        }
+
+
+    }
+
+    static String stem(List<MorphParse> parses, String aggregation) {
+
+        List<MorphParse> alternatives = selectMorphemes(parses, "minMorpheme");
+
+        List<String> candidates = morphToString(alternatives, "lemmas");
 
         switch (aggregation) {
             case "max":
-                return lemmaSet.pollLast();
+                return Collections.max(candidates, STRING_LENGTH_COMPARATOR);
             case "min":
-                return lemmaSet.pollFirst();
+                return Collections.min(candidates, STRING_LENGTH_COMPARATOR);
             default:
                 throw new RuntimeException("unknown strategy " + aggregation);
         }
-
-
     }
 
     @Override
@@ -121,7 +187,11 @@ public final class Zemberek3StemFilter extends TokenFilter {
          *  copied from {@link org.apache.lucene.analysis.br.BrazilianStemFilter#incrementToken}
          */
         final String term = termAttribute.toString();
-        final String s = stem(term, parser, aggregation);
+
+        final List<MorphParse> parses = parser.parse(term);
+        if (parses.size() == 0) return true;
+
+        final String s = stem(parses, aggregation);
         // If not stemmed, don't waste the time adjusting the token.
         if ((s != null) && !s.equals(term))
             termAttribute.setEmpty().append(s);

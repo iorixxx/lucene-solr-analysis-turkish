@@ -45,6 +45,10 @@ import java.util.Map;
  */
 public class Zemberek2StemFilterFactory extends TokenFilterFactory implements ResourceLoaderAware {
 
+    private static final RootLengthComparator ROOT_LENGTH_COMPARATOR = new RootLengthComparator();
+    private static final RootMorphemeComparator ROOT_MORPHEME_COMPARATOR = new RootMorphemeComparator();
+    private static final KelimeKokFrekansKiyaslayici FREQUENCY_COMPARATOR = new KelimeKokFrekansKiyaslayici();
+
     private final Zemberek zemberek = new Zemberek(new TurkiyeTurkcesi());
     private final String strategy;
 
@@ -54,13 +58,10 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
         if (!args.isEmpty()) {
             throw new IllegalArgumentException("Unknown parameters: " + args);
         }
-
-        System.out.println("zemberek2 factory ctor called...");
     }
 
     @Override
     public void inform(ResourceLoader loader) throws IOException {
-        System.out.println("zemberek2 inform called...");
     }
 
 
@@ -79,34 +80,29 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
 
         public Zemberek2StemFilter(TokenStream input) {
             super(input);
-            System.out.println("zemberek2 ctor called...");
         }
 
-        private String stem(String word, String aggregation) {
+        private String stem(Kelime[] cozumler, String aggregation) {
 
-            Kelime[] cozumler = zemberek.kelimeCozumle(word, CozumlemeSeviyesi.TUM_KOKLER);
-
-            if (cozumler.length == 0) return word;
-
-            if ("first".equals(aggregation)) {
+            if ("first".equals(aggregation) || cozumler.length == 1) {
                 return cozumler[0].kok().icerik();
             }
 
             switch (aggregation) {
                 case "frequency":
-                    Arrays.sort(cozumler, new KelimeKokFrekansKiyaslayici());
+                    Arrays.sort(cozumler, FREQUENCY_COMPARATOR);
                     return cozumler[0].kok().icerik();
                 case "maxLength":
-                    Arrays.sort(cozumler, new RootLengthComparator());
+                    Arrays.sort(cozumler, ROOT_LENGTH_COMPARATOR);
                     return cozumler[0].kok().icerik();
                 case "minLength":
-                    Arrays.sort(cozumler, new RootLengthComparator());
+                    Arrays.sort(cozumler, ROOT_LENGTH_COMPARATOR);
                     return cozumler[cozumler.length - 1].kok().icerik();
                 case "maxMorpheme":
-                    Arrays.sort(cozumler, new RootMorphemeComparator());
+                    Arrays.sort(cozumler, ROOT_MORPHEME_COMPARATOR);
                     return cozumler[0].kok().icerik();
                 case "minMorpheme":
-                    Arrays.sort(cozumler, new RootMorphemeComparator());
+                    Arrays.sort(cozumler, ROOT_MORPHEME_COMPARATOR);
                     return cozumler[cozumler.length - 1].kok().icerik();
                 default:
                     throw new RuntimeException("unknown strategy " + aggregation);
@@ -119,11 +115,11 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
             if (!input.incrementToken()) return false;
             if (keywordAttribute.isKeyword()) return true;
 
-            /**
-             *  copied from {@link org.apache.lucene.analysis.br.BrazilianStemFilter#incrementToken}
-             */
             final String term = termAttribute.toString();
-            final String s = stem(term, strategy);
+            final Kelime[] cozumler = zemberek.kelimeCozumle(term, CozumlemeSeviyesi.TUM_KOKLER);
+            if (cozumler.length == 0) return true;
+
+            final String s = stem(cozumler, strategy);
             // If not stemmed, don't waste the time adjusting the token.
             if ((s != null) && !s.equals(term))
                 termAttribute.setEmpty().append(s);
@@ -132,7 +128,7 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
         }
     }
 
-    private class RootLengthComparator implements Comparator<Kelime> {
+    private static class RootLengthComparator implements Comparator<Kelime> {
         @Override
         public int compare(Kelime o1, Kelime o2) {
             if (o1 == null || o2 == null) return -1;
@@ -142,7 +138,7 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
         }
     }
 
-    class RootMorphemeComparator implements Comparator<Kelime> {
+    private static class RootMorphemeComparator implements Comparator<Kelime> {
         @Override
         public int compare(Kelime o1, Kelime o2) {
             if (o1 == null || o2 == null) return -1;
@@ -152,7 +148,7 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
 
     public static void main(String[] args) throws IOException {
 
-        StringReader reader = new StringReader("utansın ortaklar çekişme");
+        StringReader reader = new StringReader("utansın ortaklar çekişme ile");
 
         Map<String, String> map = new HashMap<>();
         map.put("strategy", "first");

@@ -23,17 +23,20 @@ import org.apache.lucene.analysis.miscellaneous.StemmerOverrideFilter;
 import org.apache.lucene.analysis.util.ResourceLoader;
 import org.apache.lucene.analysis.util.ResourceLoaderAware;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
+import zemberek.morphology.apps.TurkishMorphParser;
 import zemberek.morphology.lexicon.RootLexicon;
 import zemberek.morphology.lexicon.SuffixProvider;
 import zemberek.morphology.lexicon.graph.DynamicLexiconGraph;
 import zemberek.morphology.lexicon.tr.TurkishDictionaryLoader;
 import zemberek.morphology.lexicon.tr.TurkishSuffixes;
+import zemberek.morphology.parser.MorphParse;
 import zemberek.morphology.parser.MorphParser;
 import zemberek.morphology.parser.SimpleParser;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -97,7 +100,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
                 for (String file : files) {
                     List<String> list = getLines(loader, file.trim());
                     for (String line : list) {
-                        builder.add(line, Zemberek3StemFilter.stem(line, parser, strategy));
+                        builder.add(line, Zemberek3StemFilter.stem(parser.parse(line), strategy));
                     }
                 }
                 cache = builder.build();
@@ -112,5 +115,43 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
             filter.setCache(cache);
         }
         return filter;
+    }
+
+    public static void parse(String word, TurkishMorphParser parser) {
+
+        List<MorphParse> parses = parser.parse(word);
+        System.out.println("Word = " + word + " has " + parses.size() + " many solutions");
+
+        System.out.println("Parses: ");
+
+        parses = Zemberek3StemFilter.selectMorphemes(parses, "minMorpheme");
+        for (MorphParse parse : parses) {
+            System.out.println("number of morphemes = " + parse.inflectionalGroups.size());
+            System.out.println(parse.formatLong());
+            System.out.println("\tStems = " + parse.getStems());
+            System.out.println("\tLemmas = " + parse.getLemmas());
+            System.out.println("\tLemma = " + parse.getLemma());
+            System.out.println("\tRoot = " + parse.root);
+            System.out.println("\tRoot = " + parse.dictionaryItem.root);
+            System.out.println("-------------------");
+        }
+
+        System.out.println("==================================");
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        TurkishMorphParser parser = TurkishMorphParser.createWithDefaults();
+
+
+        String a = "kuş asisi ortaklar çekişme masalı İCARETİN DE ARTMASI BEKLENİYOR\n" +
+                "Savinykh, Ege Bölgesi Sanayi Odası'nda (EBSO) düzenlenen \"Belarus Türkiye Yatırım ve İşbirliği Olanakları Semineri\"nde yaptığı konuşmada, \" 2 Haziran'dan itibaren Türk halkı vizesiz olarak Belarus'a gidip gelebilecek. İki ülke arasındaki ticaret bu anlaşma ile daha da artacak\" dedi. Türkiye ile Belarus arasında ticari, kültürel ve sosyal ilişkilerin gelişmesini arzu ettiklerini kaydeden Andrei Savinykh, ülkesinin Kırgızistan ve Kazakistan ile Gümrük Birliği anlaşması bulunduğunu, önümüzdeki ";
+
+        a = a.toLowerCase(Locale.forLanguageTag("tr"));
+
+        for (String s : a.split("\\s+")) {
+            parse(s, parser);
+        }
+
     }
 }
