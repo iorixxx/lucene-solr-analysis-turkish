@@ -157,6 +157,7 @@ public class SolrSearcher {
       else if (queryLength == QueryLength.QMS)
         search(topic.title + " " + topic.desc, topic.id);
     }
+    output.flush();
     output.close();
     return getRunName();
 
@@ -175,6 +176,7 @@ public class SolrSearcher {
       else if (queryLength == QueryLength.QMS)
         search(asciifyAndLowerCase(topic.title + " " + topic.desc), topic.id);
     }
+    output.flush();
     output.close();
     return getRunName();
 
