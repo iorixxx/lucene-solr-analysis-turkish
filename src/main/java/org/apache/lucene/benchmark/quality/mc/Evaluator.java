@@ -48,7 +48,10 @@ public class Evaluator {
 
     for (String stemmer : stemmers) {
 
-      System.out.print(stemmer + " & ");
+      if (stemmer.length() < 3)
+        System.out.print(stemmer + " \t\t\t& ");
+      else
+        System.out.print(stemmer + " \t& ");
 
       String fileName = "out_" + "tr_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
       System.out.print(getMetric(metric, outputPath + fileName) + " & ");
@@ -88,7 +91,10 @@ public class Evaluator {
 
     for (String stemmer : stemmers) {
 
-      System.out.print(stemmer + " & ");
+      if (stemmer.length() < 3)
+        System.out.print(stemmer + " \t\t\t& ");
+      else
+        System.out.print(stemmer + " \t& ");
 
       String fileName = "gdeval_" + "tr_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
       System.out.print(getMetric(metric, outputPath + fileName) + " & ");
@@ -114,6 +120,7 @@ public class Evaluator {
       System.out.println();
       System.out.println("\\hline");
     }
+    System.out.println("-------------------------------------------------------------");
   }
 
   /**
@@ -128,7 +135,10 @@ public class Evaluator {
 
     for (String stemmer : stemmers) {
 
-      System.out.print(stemmer + " & ");
+      if (stemmer.length() < 3)
+        System.out.print(stemmer + " \t\t\t& ");
+      else
+        System.out.print(stemmer + " \t& ");
 
       String fileName = "risk_sensitive_gdeval_" + "ascii_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
       System.out.print(getMetric(metric, outputPath + fileName) + " & ");
@@ -150,6 +160,7 @@ public class Evaluator {
       System.out.println();
       System.out.println("\\hline");
     }
+    System.out.println("-------------------------------------------------------------");
   }
 
   static String getMetric(Metric metric, String fileName) throws IOException {
@@ -195,12 +206,13 @@ public class Evaluator {
       printTrecEvalMetricTable("bpref", queryLength, "/Users/iorixxx/Dropbox/diacritic/");
       System.out.println("-------------------------------------------------------------");
     }
-
+/*
     for (final QueryLength queryLength : new QueryLength[]{QueryLength.Short, QueryLength.Medium})
       for (final Metric metric : new Metric[]{Metric.ERR, Metric.NCDG})
         printGDEvalMetricTable(metric, queryLength, "/Users/iorixxx/Dropbox/diacritic/");
 
 
     printRiskTable(Metric.ERR, SolrSearcher.QueryLength.Short, "/Users/iorixxx/Dropbox/diacritic/");
+    */
   }
 }
