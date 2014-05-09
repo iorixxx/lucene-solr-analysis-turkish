@@ -130,6 +130,8 @@ public class SolrSearcher {
     query.setFields("id", "score");
     query.setStart(0);
     query.setRows(1000);
+    query.setSort("score", SolrQuery.ORDER.desc);
+    query.addSort("id", SolrQuery.ORDER.asc);
 
     int i = 0;
 
