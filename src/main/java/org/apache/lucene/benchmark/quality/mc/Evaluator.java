@@ -21,8 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
+import java.text.DecimalFormat;
+import java.util.*;
 
 import static org.apache.lucene.benchmark.quality.mc.SolrSearcher.*;
 
@@ -133,6 +133,7 @@ public class Evaluator {
    */
   public static void printRiskTable(Metric metric, SolrSearcher.QueryLength queryLength, String outputPath) throws IOException {
 
+    Map<String,List<Double>> map = new LinkedHashMap<>();
     for (String stemmer : stemmers) {
 
       if (stemmer.length() < 3)
@@ -140,13 +141,45 @@ public class Evaluator {
       else
         System.out.print(stemmer + " \t& ");
 
-      String fileName = "risk_sensitive_gdeval_" + "ascii_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
-      System.out.print(getMetric(metric, outputPath + fileName) + " & ");
+        String runName = "tr_" + stemmer + "_" + queryLength.toString();
+
+        List<Double> list = new LinkedList<>();
+        list.add(Double.valueOf(getMetric(Metric.NCDG, outputPath + "gdeval_" + runName + "_submitted.txt")));
+        list.add(Double.valueOf(getMetric(Metric.ERR, outputPath + "gdeval_" + runName + "_submitted.txt")));
+        list.add(Double.NaN);
+        list.add(Double.NaN);
+
+        map.put(runName,list);
+
+
+      runName = "ascii_" + stemmer + "_" + queryLength.toString();
+
+      list = new LinkedList<>();
+      list.add(Double.valueOf(getMetric(Metric.NCDG, outputPath + "gdeval_" + runName + "_submitted.txt")));
+      list.add(Double.valueOf(getMetric(Metric.ERR, outputPath + "gdeval_" + runName + "_submitted.txt")));
+      list.add(Double.valueOf(getMetric(Metric.NCDG, outputPath + "risk_sensitive_gdeval_" + runName + "_submitted.txt")));
+      list.add(Double.valueOf(getMetric(Metric.ERR, outputPath + "risk_sensitive_gdeval_" + runName + "_submitted.txt")));
+
+      System.out.print(getMetric(metric, outputPath + "risk_sensitive_gdeval_" + runName + "_submitted.txt") + " & ");
+
+
+
+      map.put(runName,list);
 
       int i = 1;
       for (String deasciifier : deasciifiers) {
-        fileName = "risk_sensitive_gdeval_" + deasciifier + "_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
-        System.out.print(getMetric(metric, outputPath + fileName));
+        runName = deasciifier + "_" + stemmer + "_" + queryLength.toString();
+
+          list = new LinkedList<>();
+          list.add(Double.valueOf(getMetric(Metric.NCDG, outputPath + "gdeval_" + runName + "_submitted.txt")));
+          list.add(Double.valueOf(getMetric(Metric.ERR, outputPath + "gdeval_" + runName + "_submitted.txt")));
+
+          list.add(Double.valueOf(getMetric(Metric.NCDG, outputPath + "risk_sensitive_gdeval_" + runName + "_submitted.txt")));
+          list.add(Double.valueOf(getMetric(Metric.ERR, outputPath + "risk_sensitive_gdeval_" + runName + "_submitted.txt")));
+
+          System.out.print(getMetric(metric, outputPath + "risk_sensitive_gdeval_" + runName + "_submitted.txt"));
+
+        map.put(runName,list);
 
         i++;
 
@@ -161,6 +194,28 @@ public class Evaluator {
       System.out.println("\\hline");
     }
     System.out.println("-------------------------------------------------------------");
+
+      DecimalFormat df = new DecimalFormat("#.#####");
+      int i =0;
+      for(Map.Entry<String,List<Double>> entry : map.entrySet())
+      {
+          i++;
+          System.out.print(entry.getKey().replace("_","\\_") + " \t & ");
+          String row ="";
+          //List<Double> list = entry.getValue();
+          for(Double d : entry.getValue())
+          {
+              if(d.isNaN())
+              row += " *  & ";
+                  else
+              row += (df.format(d) +  " & ");
+          }
+
+          row = row.substring(0, row.length()-3);
+          System.out.println(row + " \\\\ ");
+          System.out.println("\\hline");
+          if(i%4 == 0) System.out.println("\\hline");
+      }
   }
 
   static String getMetric(Metric metric, String fileName) throws IOException {
@@ -206,13 +261,13 @@ public class Evaluator {
       printTrecEvalMetricTable("bpref", queryLength, "/Users/iorixxx/Dropbox/diacritic/");
       System.out.println("-------------------------------------------------------------");
     }
-/*
+
     for (final QueryLength queryLength : new QueryLength[]{QueryLength.Short, QueryLength.Medium})
       for (final Metric metric : new Metric[]{Metric.ERR, Metric.NCDG})
         printGDEvalMetricTable(metric, queryLength, "/Users/iorixxx/Dropbox/diacritic/");
 
 
-    printRiskTable(Metric.ERR, SolrSearcher.QueryLength.Short, "/Users/iorixxx/Dropbox/diacritic/");
-    */
+    printRiskTable(Metric.NCDG, QueryLength.Medium, "/Users/iorixxx/Dropbox/diacritic/");
+
   }
 }
