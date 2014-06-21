@@ -201,7 +201,7 @@ public class Evaluator {
     }
     System.out.println("-------------------------------------------------------------");
 
-    DecimalFormat df = new DecimalFormat("#.#####");
+    DecimalFormat df = new DecimalFormat("#0.00000");
     int i = 0;
     for (Map.Entry<String, List<Double>> entry : map.entrySet()) {
       i++;
@@ -212,6 +212,9 @@ public class Evaluator {
         if (d.isNaN())
           row += " *  & ";
         else
+         if(d==0)
+           row += "0 & ";
+           else
           row += (df.format(d) + " & ");
       }
 
