@@ -133,7 +133,7 @@ public class Evaluator {
    */
   public static void printRiskTable(Metric metric, SolrSearcher.QueryLength queryLength, String outputPath) throws IOException {
 
-    Map<String, List<Double>> map = new LinkedHashMap<>();
+    LinkedHashMap<String, List<Double>> map = new LinkedHashMap<>();
     for (String stemmer : stemmers) {
 
       if (stemmer.length() < 3)
@@ -204,25 +204,72 @@ public class Evaluator {
     DecimalFormat df = new DecimalFormat("#0.00000");
     int i = 0;
     for (Map.Entry<String, List<Double>> entry : map.entrySet()) {
-      i++;
+
       System.out.print(entry.getKey().replace("_", "\\_") + " \t & ");
       String row = "";
       //List<Double> list = entry.getValue();
+      int j = 0;
       for (Double d : entry.getValue()) {
+
         if (d.isNaN())
           row += " *  & ";
-        else
-         if(d==0)
-           row += "0 & ";
-           else
-          row += (df.format(d) + " & ");
+        else if (d == 0)
+          row += "0 & ";
+        else {
+          boolean isMax = isMax(i, j, map, d);
+
+          if (isMax && !entry.getKey().startsWith("tr_"))
+            row += ("\\textbf{" + df.format(d) + "} & ");
+          else
+            row += (df.format(d) + " & ");
+        }
+        j++;
       }
 
       row = row.substring(0, row.length() - 3);
       System.out.println(row + " \\\\ ");
       System.out.println("\\hline");
-      if (i % 4 == 0) System.out.println("\\hline");
+
+      i++;
+      if (i % 4 == 0) {
+        System.out.println("\\hline");
+      }
+
+
     }
+  }
+
+  static boolean isMax(final int i, int j, LinkedHashMap<String, List<Double>> map, Double d) {
+    String stemString = null;
+    if (i / 4 == 0) stemString = "_ns_";
+    if (i / 4 == 1) stemString = "_f5_";
+    if (i / 4 == 2) stemString = "_snowball_";
+    if (i / 4 == 3) stemString = "_zemberek2_";
+
+    StringBuilder builder = new StringBuilder();
+    builder.append("d = " + d + " stem = " + stemString + " ");
+
+    if (stemString == null) throw new RuntimeException("i = " + i);
+
+    for (Map.Entry<String, List<Double>> entry : map.entrySet()) {
+
+      String run = entry.getKey();
+
+      if(run.startsWith("tr_")) continue;
+
+      if (run.contains(stemString)) {
+        Double v = entry.getValue().get(j);
+
+        builder.append(v).append( " ");
+
+        if(v.isNaN()) continue;
+
+        if (v > d) return false;
+      }
+    }
+
+   // System.out.println( "====" + builder.toString() + " j = " + j + " i = " + i )  ;
+    return true;
   }
 
   static String getMetric(Metric metric, String fileName) throws IOException {
