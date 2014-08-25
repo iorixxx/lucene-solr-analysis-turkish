@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<schema name="Deasciification Approach to Handle Diacritics-less Search Queries" version="1.5">
+ 
+   <field name="_version_" type="long" indexed="true" stored="true"/>  
+   <field name="_root_" type="string" indexed="true" stored="false"/>
+
+   <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" /> 
+   
+   <field name="text" type="string" indexed="false" stored="true" multiValued="true"/>
+ 
+  
+   <field name="tr_ns" type="tr_ns" indexed="true" stored="false"/> 
+   <field name="tr_f5" type="tr_f5" indexed="true" stored="false"/> 
+   <field name="tr_zemberek2" type="tr_zemberek2" indexed="true" stored="false"/> 
+   <field name="tr_snowball"  type="tr_snowball" indexed="true" stored="false"/> 
+   
+   <field name="ascii_ns" type="ascii_ns" indexed="true" stored="false"/> 
+   <field name="ascii_f5" type="ascii_f5" indexed="true" stored="false"/> 
+   <field name="ascii_zemberek2" type="ascii_zemberek2" indexed="true" stored="false"/> 
+   <field name="ascii_snowball"  type="ascii_snowball" indexed="true" stored="false"/> 
+  
+   <field name="turkish_deascii_ns" type="turkish_deascii_ns" indexed="true" stored="false"/> 
+   <field name="turkish_deascii_f5" type="turkish_deascii_f5" indexed="true" stored="false"/> 
+   <field name="turkish_deascii_zemberek2" type="turkish_deascii_zemberek2" indexed="true" stored="false"/> 
+   <field name="turkish_deascii_snowball"  type="turkish_deascii_snowball" indexed="true" stored="false"/> 
+  
+   <field name="zemberek2_deascii_ns" type="zemberek2_deascii_ns" indexed="true" stored="false"/> 
+   <field name="zemberek2_deascii_f5" type="zemberek2_deascii_f5" indexed="true" stored="false"/> 
+   <field name="zemberek2_deascii_zemberek2" type="zemberek2_deascii_zemberek2" indexed="true" stored="false"/> 
+   <field name="zemberek2_deascii_snowball"  type="zemberek2_deascii_snowball" indexed="true" stored="false"/>   
+   
+   
+   <copyField source="text" dest="tr_ns"/>
+   <copyField source="text" dest="tr_f5"/>
+   <copyField source="text" dest="tr_snowball"/>
+   <copyField source="text" dest="tr_zemberek2"/>
+  
+   <copyField source="text" dest="ascii_ns"/>
+   <copyField source="text" dest="ascii_f5"/>
+   <copyField source="text" dest="ascii_snowball"/>
+   <copyField source="text" dest="ascii_zemberek2"/>
+   
+   <copyField source="text" dest="turkish_deascii_ns"/>
+   <copyField source="text" dest="turkish_deascii_f5"/>
+   <copyField source="text" dest="turkish_deascii_snowball"/>
+   <copyField source="text" dest="turkish_deascii_zemberek2"/>
+   
+   <copyField source="text" dest="zemberek2_deascii_ns"/>
+   <copyField source="text" dest="zemberek2_deascii_f5"/>
+   <copyField source="text" dest="zemberek2_deascii_snowball"/>
+   <copyField source="text" dest="zemberek2_deascii_zemberek2"/>  
+ 
+   
+    <uniqueKey>id</uniqueKey>
+
+    <fieldType name="string" class="solr.StrField" sortMissingLast="true" />  
+    <fieldType name="long" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0"/>  
+    
+    <!-- Turkish -->
+    <fieldType name="text_tr" class="solr.TextField" positionIncrementGap="100">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/>    
+        <filter class="solr.SnowballPorterFilterFactory" language="Turkish"/>
+      </analyzer>
+    </fieldType>  
+    
+     
+    <!-- Turkish Zemberek2 Stemming -->
+    <fieldType name="tr_zemberek2" class="solr.TextField" positionIncrementGap="100">
+      <analyzer>      
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/>       
+        <filter class="org.apache.lucene.analysis.tr.Zemberek2StemFilterFactory" />
+      </analyzer>
+    </fieldType>
+    
+    <!-- Turkish Fixed Prefix Stemming F5 -->
+    <fieldType name="tr_f5" class="solr.TextField" positionIncrementGap="100">
+      <analyzer>      
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/>       
+        <filter class="solr.TruncateTokenFilterFactory" prefixLength="5"/>
+      </analyzer> 
+    </fieldType>
+        
+  
+   <!-- This is the field type that comes with out of the box solr -->
+    <fieldType name="tr_snowball" class="solr.TextField" positionIncrementGap="100">
+      <analyzer> 
+       <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/>    
+        <filter class="solr.SnowballPorterFilterFactory" language="Turkish"/>
+      </analyzer>
+    </fieldType>
+    
+    <!-- Turkish No Stemming -->
+    <fieldType name="tr_ns" class="solr.TextField" positionIncrementGap="100">
+      <analyzer> 
+       <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/>          
+      </analyzer>
+    </fieldType>
+    
+      <!-- ASCII Zemberek2 stemming -->
+    <fieldType name="ascii_zemberek2" class="solr.TextField" positionIncrementGap="100">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="solr.ASCIIFoldingFilterFactory"/>  
+        <filter class="org.apache.lucene.analysis.tr.Zemberek2StemFilterFactory"/>  
+      </analyzer>
+    </fieldType>  
+    
+     <!-- ASCII Fixed Prefix Stemming F5-->
+    <fieldType name="ascii_f5" class="solr.TextField" positionIncrementGap="100">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="solr.ASCIIFoldingFilterFactory"/>  
+        <filter class="solr.TruncateTokenFilterFactory" prefixLength="5"/> 
+      </analyzer>
+    </fieldType>  
+    
+    <!-- ASCII snowball stemming-->
+    <fieldType name="ascii_snowball" class="solr.TextField" positionIncrementGap="100">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="solr.ASCIIFoldingFilterFactory"/>  
+        <filter class="solr.SnowballPorterFilterFactory" language="Turkish"/>    
+      </analyzer>
+    </fieldType>  
+    
+    
+    <!-- ASCII No Stemming -->
+    <fieldType name="ascii_ns" class="solr.TextField" positionIncrementGap="100">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="solr.ASCIIFoldingFilterFactory"/>      
+      </analyzer>
+    </fieldType>  
+        
+    
+    <!-- Turkish Deasciifier No Stemming -->
+    <fieldType name="turkish_deascii_ns" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/>           
+      </analyzer>
+      <analyzer type="query"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="org.apache.lucene.analysis.tr.TurkishDeasciifyFilterFactory" preserveOriginal="false"/>      
+      </analyzer>
+    </fieldType>  
+    
+    <!-- Turkish Deasciifier Snowball Stemming -->
+    <fieldType name="turkish_deascii_snowball" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="solr.SnowballPorterFilterFactory" language="Turkish"/>          
+      </analyzer>
+      <analyzer type="query"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="org.apache.lucene.analysis.tr.TurkishDeasciifyFilterFactory" preserveOriginal="false"/>    
+        <filter class="solr.SnowballPorterFilterFactory" language="Turkish"/>     
+        <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>    
+      </analyzer>
+    </fieldType>  
+    
+    <!-- Turkish Deasciifier Zemberek2 Stemming -->
+    <fieldType name="turkish_deascii_zemberek2" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="org.apache.lucene.analysis.tr.Zemberek2StemFilterFactory"/>         
+      </analyzer>
+      <analyzer type="query"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="org.apache.lucene.analysis.tr.TurkishDeasciifyFilterFactory" preserveOriginal="false"/>       
+        <filter class="org.apache.lucene.analysis.tr.Zemberek2StemFilterFactory"/>   
+        <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>  
+      </analyzer>
+    </fieldType>    
+    
+     <!-- Turkish Deasciifier Fixed Prefix Stemming F5 -->
+    <fieldType name="turkish_deascii_f5" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="solr.TruncateTokenFilterFactory" prefixLength="5"/>       
+      </analyzer>
+      <analyzer type="query"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="org.apache.lucene.analysis.tr.TurkishDeasciifyFilterFactory" preserveOriginal="false"/>  
+        <filter class="solr.TruncateTokenFilterFactory" prefixLength="5"/>   
+        <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>    
+      </analyzer>
+    </fieldType>   
+    
+     <!-- Zebmerek2 Deasciifier No Stemming -->
+    <fieldType name="zemberek2_deascii_ns" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/>           
+      </analyzer>
+      <analyzer type="query"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="org.apache.lucene.analysis.tr.Zemberek2DeasciifyFilterFactory"/>
+      </analyzer>
+    </fieldType>  
+    
+    <!-- Zemberek2 Deasciifier Snowball Stemming -->
+    <fieldType name="zemberek2_deascii_snowball" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="solr.SnowballPorterFilterFactory" language="Turkish"/>          
+      </analyzer>
+      <analyzer type="query"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="org.apache.lucene.analysis.tr.Zemberek2DeasciifyFilterFactory"/>    
+        <filter class="solr.SnowballPorterFilterFactory" language="Turkish"/>  
+        <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>       
+      </analyzer>
+    </fieldType>  
+    
+    <!-- Zemberek2 Deasciifier Zemberek2 Stemming -->
+    <fieldType name="zemberek2_deascii_zemberek2" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="org.apache.lucene.analysis.tr.Zemberek2StemFilterFactory"/>            
+      </analyzer>
+      <analyzer type="query"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="org.apache.lucene.analysis.tr.Zemberek2DeasciifyFilterFactory"/>       
+        <filter class="org.apache.lucene.analysis.tr.Zemberek2StemFilterFactory"/>   
+        <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>  
+      </analyzer>
+    </fieldType>    
+    
+    <!-- Zemberek2 Deasciifier Fixed Prefix Stemming F5 -->
+    <fieldType name="zemberek2_deascii_f5" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="solr.TruncateTokenFilterFactory" prefixLength="5"/>       
+      </analyzer>
+      <analyzer type="query"> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ApostropheFilterFactory"/>
+        <filter class="solr.TurkishLowerCaseFilterFactory"/> 
+        <filter class="org.apache.lucene.analysis.tr.Zemberek2DeasciifyFilterFactory"/>  
+        <filter class="solr.TruncateTokenFilterFactory" prefixLength="5"/>    
+        <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>   
+      </analyzer>
+    </fieldType>   
+    
+</schema>
