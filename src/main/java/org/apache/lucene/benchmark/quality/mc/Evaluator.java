@@ -33,7 +33,7 @@ import static org.apache.lucene.benchmark.quality.mc.SolrSearcher.*;
 public class Evaluator {
 
   public enum Metric {
-    NCDG, ERR
+    NDCG, ERR
   }
 
   /**
@@ -144,7 +144,7 @@ public class Evaluator {
       String runName = "tr_" + stemmer + "_" + queryLength.toString();
 
       List<Double> list = new LinkedList<>();
-      list.add(Double.valueOf(getMetric(Metric.NCDG, outputPath + "gdeval_" + runName + "_submitted.txt")));
+      list.add(Double.valueOf(getMetric(Metric.NDCG, outputPath + "gdeval_" + runName + "_submitted.txt")));
       list.add(Double.valueOf(getMetric(Metric.ERR, outputPath + "gdeval_" + runName + "_submitted.txt")));
       list.add(Double.NaN);
       list.add(Double.NaN);
@@ -157,11 +157,11 @@ public class Evaluator {
       runName = "ascii_" + stemmer + "_" + queryLength.toString();
 
       list = new LinkedList<>();
-      list.add(Double.valueOf(getMetric(Metric.NCDG, outputPath + "gdeval_" + runName + "_submitted.txt")));
+      list.add(Double.valueOf(getMetric(Metric.NDCG, outputPath + "gdeval_" + runName + "_submitted.txt")));
       list.add(Double.valueOf(getMetric(Metric.ERR, outputPath + "gdeval_" + runName + "_submitted.txt")));
 
       for (int alpha = 1; alpha <= 5; alpha = alpha + 4) {
-        list.add(Double.valueOf(getMetric(Metric.NCDG, outputPath + "risk_sensitive_" + alpha + "_" + runName + "_submitted.txt")));
+        list.add(Double.valueOf(getMetric(Metric.NDCG, outputPath + "risk_sensitive_" + alpha + "_" + runName + "_submitted.txt")));
         list.add(Double.valueOf(getMetric(Metric.ERR, outputPath + "risk_sensitive_" + alpha + "_" + runName + "_submitted.txt")));
       }
 
@@ -175,11 +175,11 @@ public class Evaluator {
         runName = deasciifier + "_" + stemmer + "_" + queryLength.toString();
 
         list = new LinkedList<>();
-        list.add(Double.valueOf(getMetric(Metric.NCDG, outputPath + "gdeval_" + runName + "_submitted.txt")));
+        list.add(Double.valueOf(getMetric(Metric.NDCG, outputPath + "gdeval_" + runName + "_submitted.txt")));
         list.add(Double.valueOf(getMetric(Metric.ERR, outputPath + "gdeval_" + runName + "_submitted.txt")));
 
         for (int alpha = 1; alpha <= 5; alpha = alpha + 4) {
-          list.add(Double.valueOf(getMetric(Metric.NCDG, outputPath + "risk_sensitive_" + alpha + "_" + runName + "_submitted.txt")));
+          list.add(Double.valueOf(getMetric(Metric.NDCG, outputPath + "risk_sensitive_" + alpha + "_" + runName + "_submitted.txt")));
           list.add(Double.valueOf(getMetric(Metric.ERR, outputPath + "risk_sensitive_" + alpha + "_" + runName + "_submitted.txt")));
         }
 
@@ -280,11 +280,11 @@ public class Evaluator {
         String[] parts = line.split("\\s*,");
         if (parts.length == 4) {
           if (Metric.ERR.equals(metric)) return parts[3];
-          if (Metric.NCDG.equals(metric)) return parts[2];
+          if (Metric.NDCG.equals(metric)) return parts[2];
         }
         if (parts.length == 6) {
           if (Metric.ERR.equals(metric)) return parts[5];
-          if (Metric.NCDG.equals(metric)) return parts[4];
+          if (Metric.NDCG.equals(metric)) return parts[4];
         }
 
         throw new RuntimeException("line should have four or six parts " + Arrays.toString(parts));
@@ -317,11 +317,11 @@ public class Evaluator {
     }
 
     for (final QueryLength queryLength : new QueryLength[]{QueryLength.Short, QueryLength.Medium})
-      for (final Metric metric : new Metric[]{Metric.ERR, Metric.NCDG})
+      for (final Metric metric : new Metric[]{Metric.ERR, Metric.NDCG})
         printGDEvalMetricTable(metric, queryLength, "/Users/iorixxx/Dropbox/diacritic/");
 
 
-    printRiskTable(Metric.NCDG, QueryLength.Medium, "/Users/iorixxx/Dropbox/diacritic/");
+    printRiskTable(Metric.NDCG, QueryLength.Medium, "/Users/iorixxx/Dropbox/diacritic/");
 
   }
 }
