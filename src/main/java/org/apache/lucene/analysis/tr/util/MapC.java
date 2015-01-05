@@ -258,6 +258,7 @@ final class MapC {
             put("uXit", -691); put("ikiX", -692); put("kiXa", 693);
             put(" zUX", -694); put("omeX", -695); put("kkeX", 696);
             put("aXif", -697); put("I dX", 698); put("fuXk", -699);
+            put("cInX", -700); put("hunX", -701);put ("almX", 702);
             put("Xirv", -703); put("eXig", -704); put("punX", -705);
             put("msiX", -706); put("syaX", -707); put("aIrX", -708);
             put("Xinh", 709); put("oXea", -710); put("ierX", -711);

@@ -25,6 +25,7 @@ final class MapS {
     CharArrayMap.unmodifiableMap(
     new CharArrayMap<Integer>(PatternTableFactory.version, 3193, PatternTableFactory.ignoreCase)
     {{
+            put("kut Xe", 1); put("a nurX", 2); put("lIXiyi", -3); put("Xleriz", -4); put("raXama", 5);
             put("de aX ", -6); put("vard X", 7); put("irmeX ", 8); put("gin Xo", -9); put("k miX ", 10);
             put("re fiX", 11); put("IXici ", -12); put("oni Xe", 13); put("y yaXt", -14); put("r gUlX", -15);
             put("kafi X", -16); put("UC Xu ", -17); put("mum iX", -18); put("i miX ", 19); put("ce niX", 20);

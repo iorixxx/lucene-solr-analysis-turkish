@@ -25,6 +25,7 @@ final class MapU {
     CharArrayMap.unmodifiableMap(
     new CharArrayMap<Integer>(PatternTableFactory.version, 2390, PatternTableFactory.ignoreCase)
     {{
+            put("Xctugu", -1); put(" ay sX", 2); put("fXtur ", 3); put("Xysuz ", -4);
             put("Gi rXs", -5); put("an Xnv", 6); put("Xldeni", -7); put("dIn Xn", 8); put("i kXcu", 9);
             put("43 sX ", 10); put("Xcunda", -11); put("g kulX", 12); put(" aC kX", -13); put("Xrunda", -14);
             put("lI tXt", -15); put("pon bX", 16); put("ok bXy", 17); put("z abdX", -18); put("mamXlu", -19);
