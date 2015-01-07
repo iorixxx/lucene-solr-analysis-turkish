@@ -138,6 +138,7 @@ public class Zemberek2DeasciifyFilterFactory extends TokenFilterFactory {
             String term = termAttribute.toString();
             System.out.println(term);
         }
+        stream.end();
     }
 }
 

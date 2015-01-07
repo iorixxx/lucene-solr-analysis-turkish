@@ -148,7 +148,7 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
 
     public static void main(String[] args) throws IOException {
 
-        StringReader reader = new StringReader("utansın ortaklar çekişme ile");
+        StringReader reader = new StringReader("elması utansın ortaklar çekişme ile");
 
         Map<String, String> map = new HashMap<>();
         map.put("strategy", "first");
@@ -165,5 +165,6 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
             String term = termAttribute.toString();
             System.out.println(term);
         }
+        stream.end();
     }
 }

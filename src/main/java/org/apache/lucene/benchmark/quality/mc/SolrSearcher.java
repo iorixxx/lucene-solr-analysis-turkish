@@ -23,22 +23,34 @@ import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.params.CommonParams;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 
-public class SolrSearcher {
+public class SolrSearcher implements Closeable {
 
-  public SolrSearcher(String solrURL, String outputPath, String queryCSV) throws IOException {
-    server = new HttpSolrServer(solrURL);
-    this.outputPath = outputPath;
+  private static final String solrURL = "http://localhost:8983/solr/";
+
+  public SolrSearcher(String coreName, String outputPath, String queryCSV) throws IOException {
+
+  server = new HttpSolrServer(solrURL+coreName);
+
+  this.outputPath = Paths.get(outputPath, coreName);
+    if (!Files.exists(this.outputPath))
+       Files.createDirectories(this.outputPath);
     topics = getTopics(queryCSV);
   }
+
+    @Override
+    public void close() throws IOException {
+        server.shutdown();
+    }
 
   static class Topic {
 
@@ -65,8 +77,9 @@ public class SolrSearcher {
           return "QM";
         case QMS:
           return "QMS";
+        default:
+          throw new AssertionError(this);
       }
-      return super.toString();
     }
   }
 
@@ -83,7 +96,7 @@ public class SolrSearcher {
 
   private final HttpSolrServer server;
   private String defaultField = null;
-  private final String outputPath;
+  private final Path outputPath;
   private final List<Topic> topics;
 
   private PrintWriter output;
@@ -94,7 +107,7 @@ public class SolrSearcher {
 
     List<Topic> topics = new ArrayList<>();
 
-    List<String> lines = Files.readAllLines(new File(queryCSV).toPath(), StandardCharsets.UTF_8);
+    List<String> lines = Files.readAllLines(Paths.get(queryCSV), StandardCharsets.UTF_8);
 
     for (String line : lines) {
       String[] parts = line.split("\t");
@@ -146,9 +159,11 @@ public class SolrSearcher {
 
   }
 
-  public String search() throws SolrServerException, FileNotFoundException {
+  public String search() throws SolrServerException, IOException {
 
-    output = new PrintWriter(outputPath + getRunName() + "_submitted.txt");
+    output = new PrintWriter(Files.newBufferedWriter(
+              outputPath.resolve(getRunName() + "_submitted.txt"),
+              StandardCharsets.US_ASCII));
 
     for (Topic topic : topics) {
 
@@ -165,9 +180,11 @@ public class SolrSearcher {
 
   }
 
-  public String searchAsciify() throws SolrServerException, FileNotFoundException {
+  public String searchAsciify() throws SolrServerException, IOException {
 
-    output = new PrintWriter(outputPath + getRunName() + "_submitted.txt");
+      output = new PrintWriter(Files.newBufferedWriter(
+              outputPath.resolve(getRunName() + "_submitted.txt"),
+              StandardCharsets.US_ASCII));
 
     for (Topic topic : topics) {
 
@@ -231,32 +248,33 @@ public class SolrSearcher {
 
   public static void main(String[] args) throws SolrServerException, IOException {
 
-    SolrSearcher searcher = new SolrSearcher(
-        "http://localhost:8983/solr/deascii/",
-        "/Users/iorixxx/Dropbox/diacritic/",
-        "/Users/iorixxx/Dropbox/queries.csv/"
-    );
+      for(final String core: new String []{"catA", "catB"})
 
-    for (final QueryLength queryLength : new QueryLength[]{QueryLength.Short, QueryLength.Medium}) {
+       try(SolrSearcher searcher = new SolrSearcher(core,
+        "/Volumes/data/diacritics/",
+        "/Users/iorixxx/Dropbox/queries.csv/")
+       ) {
 
-      searcher.setQueryLength(queryLength);
+              for (final QueryLength queryLength : new QueryLength[]{QueryLength.Short, QueryLength.Medium}) {
 
-      for (String stemmer : stemmers) {
+                  searcher.setQueryLength(queryLength);
 
-        searcher.setDefaultField("tr_" + stemmer);
-        System.out.println(searcher.search());
+                  for (String stemmer : stemmers) {
 
-        searcher.setDefaultField("ascii_" + stemmer);
-        System.out.println(searcher.searchAsciify());
+                      searcher.setDefaultField("tr_" + stemmer);
+                      System.out.println(searcher.search());
 
-        for (String deasciifier : deasciifiers) {
+                      searcher.setDefaultField("ascii_" + stemmer);
+                      System.out.println(searcher.searchAsciify());
 
-          searcher.setDefaultField(deasciifier + "_" + stemmer);
-          System.out.println(searcher.searchAsciify());
+                      for (String deasciifier : deasciifiers) {
 
-        }
-      }
-    }
+                          searcher.setDefaultField(deasciifier + "_" + stemmer);
+                          System.out.println(searcher.searchAsciify());
 
+                      }
+                  }
+              }
+          }
   }
 }
