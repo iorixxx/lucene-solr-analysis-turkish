@@ -70,7 +70,7 @@ Here is the [difference](https://github.com/iorixxx/zemberek-nlp/commit/3926bcf3
 
 5.
 **TurkishDeasciifyFilter(Factory)**
-Translation of [Turkish Deasciifier](https://github.com/emres/turkish-deasciifier) from Python to Java.
+Translation of [Emacs Turkish mode](http://www.denizyuret.com/2006/11/emacs-turkish-mode.html) from Lisp to Java.
 This filter intended to be used at query time to allow *diacritics-insensitive search* for Turkish.
 ``` xml
 <fieldType name="text_tr_deascii" class="solr.TextField" positionIncrementGap="100">

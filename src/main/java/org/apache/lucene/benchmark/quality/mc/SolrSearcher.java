@@ -251,7 +251,7 @@ public class SolrSearcher implements Closeable {
       for(final String core: new String []{"catA", "catB"})
 
        try(SolrSearcher searcher = new SolrSearcher(core,
-        "/Volumes/data/diacritics/",
+        "/Volumes/data/diacritics/runs/",
         "/Users/iorixxx/Dropbox/queries.csv/")
        ) {
 
