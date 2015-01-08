@@ -140,7 +140,7 @@
             <version>2.1.3</version>
             <type>jar</type>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/zemberek-tr-2.1.3.jar</systemPath>
+            <systemPath>${project.basedir}/solr/lib/zemberek-tr-2.1.3.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -149,7 +149,7 @@
             <version>2.1.3</version>
             <type>jar</type>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/zemberek-cekirdek-2.1.3.jar</systemPath>
+            <systemPath>${project.basedir}/solr/lib/zemberek-cekirdek-2.1.3.jar</systemPath>
         </dependency>
 
         <dependency>

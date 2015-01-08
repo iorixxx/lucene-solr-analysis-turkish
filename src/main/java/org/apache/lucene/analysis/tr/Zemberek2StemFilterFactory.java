@@ -151,7 +151,7 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
         StringReader reader = new StringReader("elması utansın ortaklar çekişme ile");
 
         Map<String, String> map = new HashMap<>();
-        map.put("strategy", "first");
+        map.put("strategy", "frequency");
 
         Zemberek2StemFilterFactory factory = new Zemberek2StemFilterFactory(map);
 
