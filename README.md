@@ -3,13 +3,16 @@ lucene-solr-analysis-turkish
 
 Turkish analysis components for Lucene/Solr
 
-*open source* usage gaining momentum in Turkey. Turkish users on lucene/solr mailing lists are increasing.
+*Open Source Software* usage gaining momentum in Turkey. Turkish users on lucene/solr mailing lists are increasing.
 This project makes use of publicly available Turkish nlp tools to create [lucene/solr plugins](https://cwiki.apache.org/confluence/display/solr/Solr+Plugins) from them.
-In order to promote and support open source I created this project. Stock lucene/solr has
+I created this project in order to promote and support open source. Stock lucene/solr has
 [SnowballPorterFilter(Factory)](https://cwiki.apache.org/confluence/display/solr/Language+Analysis#LanguageAnalysis-Turkish)
-for Turkish language However this stemmer performs poorly and has funny collisions. I will post some of the collisions here.
+for Turkish language. However, this stemmer performs poorly and has funny collisions.
+For example; altın, alim, alın, altan, and alıntı are all reduced to a same stem.
+In other words, they are treated as if they were the same word even though they have different meanings.
+I will post some other harmful collisions here.
 
-Currently we have three TokenFilters. Detailed documentation is on the way.
+Currently we have five TokenFilters. Detailed documentation is on the way.
 
 1.
 **TRMorphStemFilter(Factory)**
