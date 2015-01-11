@@ -17,6 +17,8 @@ package org.apache.lucene.benchmark.quality.mc;
  * limitations under the License.
  */
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.ClassicFilter;
@@ -65,7 +67,7 @@ public class IntrinsicEvaluator {
     }
 
 
-    private final static PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:*.txt");
+    private final static PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:*.csv");
 
     static List<Path> discoverTextFiles(Path p) {
 
@@ -96,6 +98,9 @@ public class IntrinsicEvaluator {
 
         for (int j = 0; j < SolrSearcher.TURKISH_CHARACTERS.length; j++)
             accentedCharSet.add(SolrSearcher.TURKISH_CHARACTERS[j]);
+
+        for (int j = 0; j < SolrSearcher.ENGLISH_CHARACTERS.length; j++)
+            accentedCharSet.add(SolrSearcher.ENGLISH_CHARACTERS[j]);
     }
 
     static boolean containsTurkishAccentedChar(final CharTermAttribute termAtt) {
@@ -111,9 +116,10 @@ public class IntrinsicEvaluator {
 
     public static void main(String[] args) throws IOException {
 
-        Map<String, Set<String>> collisions = new HashMap<>();
 
-        for (Path path : discoverTextFiles(Paths.get("/Users/iorixxx/collection-20072011"))) {
+        Map<String, Multiset<String>> collisions = new HashMap<>();
+
+        for (Path path : discoverTextFiles(Paths.get("/Users/iorixxx"))) {
             System.out.println("processing file : " + path);
 
             Analyzer analyzer = new TurkishAnalyzer();
@@ -147,7 +153,7 @@ public class IntrinsicEvaluator {
                             if (collisions.containsKey(asciiTerm))
                                 collisions.get(asciiTerm).add(term);
                             else {
-                                Set<String> list = new HashSet<>();
+                                Multiset<String> list = HashMultiset.create();
                                 list.add(term);
                                 collisions.put(asciiTerm, list);
                             }
@@ -161,15 +167,18 @@ public class IntrinsicEvaluator {
 
         }
 
-        List<Set<String>> allTheLists = new ArrayList<>(collisions.values());
-        Collections.sort(allTheLists, new Comparator<Set<String>>() {
-            public int compare(Set<String> a1, Set<String> a2) {
-                return a2.size() - a1.size(); // assumes you want biggest to smallest
+        List<Multiset<String>> allTheLists = new ArrayList<>(collisions.values());
+        Collections.sort(allTheLists, new Comparator<Multiset<String>>() {
+            public int compare(Multiset<String> a1, Multiset<String> a2) {
+                return a2.entrySet().size() - a1.entrySet().size(); // assumes you want biggest to smallest
             }
         });
 
-        for (int i = 0; i < 1000; i++)
-            System.out.println(allTheLists.get(i));
+        for (int i = 0; i < allTheLists.size(); i++)
+            if (allTheLists.get(i).entrySet().size() > 2) {
+                System.out.println(allTheLists.get(i));
+
+            }
 
     }
 }
