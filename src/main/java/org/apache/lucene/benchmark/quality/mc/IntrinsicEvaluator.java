@@ -19,12 +19,17 @@ package org.apache.lucene.benchmark.quality.mc;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import net.zemberek.erisim.Zemberek;
+import net.zemberek.islemler.cozumleme.CozumlemeSeviyesi;
+import net.zemberek.tr.yapi.TurkiyeTurkcesi;
+import net.zemberek.yapi.Kelime;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.ClassicFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tr.ApostropheFilter;
+import org.apache.lucene.analysis.tr.TurkishDeasciifyFilter;
 import org.apache.lucene.analysis.tr.TurkishLowerCaseFilter;
 import org.apache.lucene.util.Version;
 
@@ -41,6 +46,69 @@ import java.util.*;
  * intrinsic evaluation of the different diacritics restoration systems
  */
 public class IntrinsicEvaluator {
+
+    static abstract class Deasciifier {
+
+        int wrongTerms = 0;
+
+        public Deasciifier() {
+            wrongTerms = 0;
+        }
+
+        void incrementWrongTermCount() {
+            wrongTerms++;
+        }
+
+        int getWrongTermCount() {
+            return wrongTerms;
+        }
+
+        void printAccuracy(int numTerms) {
+            if (numTerms != 0) {
+                double errorRate = (double) wrongTerms / numTerms;
+                errorRate *= 100.0;
+                System.out.println(getName() + " : numTerms = " + numTerms + " wrong terms = " + wrongTerms + " error rate = " + errorRate + "%");
+            }
+        }
+
+        abstract String deasciiyf(String asciiTerm);
+
+        abstract String getName();
+    }
+
+    static class ZemberekDeasciifier extends Deasciifier {
+
+        private final Zemberek zemberek = new Zemberek(new TurkiyeTurkcesi());
+
+        @Override
+        public String deasciiyf(String asciiTerm) {
+
+            Kelime[] kelimeler = zemberek.asciiCozumle(asciiTerm, CozumlemeSeviyesi.TUM_KOKLER);
+
+            if (kelimeler.length == 0)
+                return asciiTerm;
+            else
+                return kelimeler[0].icerikStr();
+        }
+
+        @Override
+        public String getName() {
+            return "zemberek";
+        }
+    }
+
+    static class TurkishDeasciifier extends Deasciifier {
+
+        @Override
+        public String deasciiyf(String asciiTerm) {
+            return TurkishDeasciifyFilter.convert_to_turkish(asciiTerm.toCharArray());
+        }
+
+        @Override
+        public String getName() {
+            return "turkish";
+        }
+    }
 
     /**
      * Filters {@link org.apache.lucene.analysis.standard.StandardTokenizer} with {@link org.apache.lucene.analysis.tr.ApostropheFilter} and {@link org.apache.lucene.analysis.tr.TurkishLowerCaseFilter}.
@@ -67,10 +135,9 @@ public class IntrinsicEvaluator {
     }
 
 
-    private final static PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:*.csv");
+    static List<Path> discoverTextFiles(Path p, String pattern) {
 
-    static List<Path> discoverTextFiles(Path p) {
-
+        final PathMatcher matcher = FileSystems.getDefault().getPathMatcher(pattern);
         final List<Path> txtFiles = new ArrayList<>();
 
         FileVisitor<Path> fv = new SimpleFileVisitor<Path>() {
@@ -114,14 +181,40 @@ public class IntrinsicEvaluator {
 
     }
 
+    static void prune(Map<String, Multiset<String>> map, int minTF) {
+        for (Map.Entry<String, Multiset<String>> entry : map.entrySet()) {
+            Multiset<String> set = entry.getValue();
+
+            Iterator<String> iterator = set.iterator();
+
+            while (iterator.hasNext()) {
+
+                String string = iterator.next();
+                int count = set.count(string);
+
+                if (count < minTF)
+                    iterator.remove();
+
+            }
+
+
+        }
+    }
+
     public static void main(String[] args) throws IOException {
 
+        Deasciifier[] deasciifiers = new Deasciifier[]{new ZemberekDeasciifier(), new TurkishDeasciifier()};
 
         Map<String, Multiset<String>> collisions = new HashMap<>();
 
-        for (Path path : discoverTextFiles(Paths.get("/Users/iorixxx"))) {
+
+        int numTerms = 0;
+        int c = 0;
+
+        for (Path path : discoverTextFiles(Paths.get("/Volumes/data/collection-20072011/"), "glob:*.txt")) {
             System.out.println("processing file : " + path);
 
+            if (++c % 7 == 0) break;
             Analyzer analyzer = new TurkishAnalyzer();
             try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
 
@@ -144,11 +237,17 @@ public class IntrinsicEvaluator {
                             if (!containsTurkishAccentedChar(termAtt))
                                 continue;
 
+                            numTerms++;
+
                             final String term = termAtt.toString();
 
-                            String asciiTerm = SolrSearcher.asciify(term);
+                            final String asciiTerm = SolrSearcher.asciify(term);
 
-                            // System.out.println(term);
+                            for (Deasciifier deasciifier : deasciifiers) {
+                                String deasciiTerm = deasciifier.deasciiyf(asciiTerm);
+                                if (!deasciiTerm.equals(asciiTerm))
+                                    deasciifier.incrementWrongTermCount();
+                            }
 
                             if (collisions.containsKey(asciiTerm))
                                 collisions.get(asciiTerm).add(term);
@@ -167,15 +266,21 @@ public class IntrinsicEvaluator {
 
         }
 
+        for (Deasciifier deasciifier : deasciifiers) {
+            deasciifier.printAccuracy(numTerms);
+        }
+
+        prune(collisions, 1);
+
         List<Multiset<String>> allTheLists = new ArrayList<>(collisions.values());
         Collections.sort(allTheLists, new Comparator<Multiset<String>>() {
             public int compare(Multiset<String> a1, Multiset<String> a2) {
-                return a2.entrySet().size() - a1.entrySet().size(); // assumes you want biggest to smallest
+                return a2.elementSet().size() - a1.elementSet().size(); // assumes you want biggest to smallest
             }
         });
 
         for (int i = 0; i < allTheLists.size(); i++)
-            if (allTheLists.get(i).entrySet().size() > 2) {
+            if (allTheLists.get(i).entrySet().size() > 1) {
                 System.out.println(allTheLists.get(i));
 
             }
