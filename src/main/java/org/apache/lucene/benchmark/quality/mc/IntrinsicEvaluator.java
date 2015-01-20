@@ -25,18 +25,16 @@ import net.zemberek.tr.yapi.TurkiyeTurkcesi;
 import net.zemberek.yapi.Kelime;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.core.LetterTokenizer;
 import org.apache.lucene.analysis.standard.ClassicFilter;
-import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tr.ApostropheFilter;
 import org.apache.lucene.analysis.tr.TurkishDeasciifyFilter;
 import org.apache.lucene.analysis.tr.TurkishLowerCaseFilter;
 import org.apache.lucene.util.Version;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -71,7 +69,7 @@ public class IntrinsicEvaluator {
             }
         }
 
-        abstract String deasciiyf(String asciiTerm);
+        abstract String deasciify(String asciiTerm);
 
         abstract String getName();
     }
@@ -81,7 +79,7 @@ public class IntrinsicEvaluator {
         private final Zemberek zemberek = new Zemberek(new TurkiyeTurkcesi());
 
         @Override
-        public String deasciiyf(String asciiTerm) {
+        public String deasciify(String asciiTerm) {
 
             Kelime[] kelimeler = zemberek.asciiCozumle(asciiTerm, CozumlemeSeviyesi.TUM_KOKLER);
 
@@ -100,7 +98,7 @@ public class IntrinsicEvaluator {
     static class TurkishDeasciifier extends Deasciifier {
 
         @Override
-        public String deasciiyf(String asciiTerm) {
+        public String deasciify(String asciiTerm) {
             return TurkishDeasciifyFilter.convert_to_turkish(asciiTerm.toCharArray());
         }
 
@@ -117,8 +115,8 @@ public class IntrinsicEvaluator {
 
         @Override
         protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
-            final StandardTokenizer src = new StandardTokenizer(Version.LUCENE_48, reader);
-            src.setMaxTokenLength(255);
+            final LetterTokenizer src = new LetterTokenizer(Version.LUCENE_48, reader);
+            // src.setMaxTokenLength(255);
             TokenStream tok = new ClassicFilter(src);
             tok = new ApostropheFilter(tok);
             tok = new TurkishLowerCaseFilter(tok);
@@ -127,7 +125,7 @@ public class IntrinsicEvaluator {
             return new TokenStreamComponents(src, tok) {
                 @Override
                 protected void setReader(final Reader reader) throws IOException {
-                    src.setMaxTokenLength(255);
+                    //src.setMaxTokenLength(255);
                     super.setReader(reader);
                 }
             };
@@ -214,61 +212,44 @@ public class IntrinsicEvaluator {
         for (Path path : discoverTextFiles(Paths.get("/Volumes/data/collection-20072011/"), "glob:*.txt")) {
             System.out.println("processing file : " + path);
 
-            if (++c % 7 == 0) break;
+            //   if (++c % 7 == 0) break;
             Analyzer analyzer = new TurkishAnalyzer();
-            try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            try (TokenStream ts = analyzer.tokenStream("field", Files.newBufferedReader(path, StandardCharsets.UTF_8))) {
 
-                for (; ; ) {
-                    String line = reader.readLine();
+                final CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);
+                ts.reset(); // Resets this stream to the beginning. (Required)
+                while (ts.incrementToken()) {
 
-                    if (line == null)
-                        break;
+                    if (!containsTurkishAccentedChar(termAtt))
+                        continue;
 
-                    if ("<DOCUMENT>".equals(line)) continue;
-                    if ("</DOCUMENT>".equals(line)) continue;
+                    numTerms++;
 
+                    final String term = termAtt.toString();
 
-                    try (TokenStream ts = analyzer.tokenStream("field", new StringReader(line))) {
+                    final String asciiTerm = SolrSearcher.asciify(term);
 
-                        final CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);
-                        ts.reset(); // Resets this stream to the beginning. (Required)
-                        while (ts.incrementToken()) {
-
-                            if (!containsTurkishAccentedChar(termAtt))
-                                continue;
-
-                            numTerms++;
-
-                            final String term = termAtt.toString();
-
-                            final String asciiTerm = SolrSearcher.asciify(term);
-
-                            for (Deasciifier deasciifier : deasciifiers) {
-                                String deasciiTerm = deasciifier.deasciiyf(asciiTerm);
-                                if (!deasciiTerm.equals(asciiTerm))
-                                    deasciifier.incrementWrongTermCount();
-                            }
-
-                            if (collisions.containsKey(asciiTerm))
-                                collisions.get(asciiTerm).add(term);
-                            else {
-                                Multiset<String> list = HashMultiset.create();
-                                list.add(term);
-                                collisions.put(asciiTerm, list);
-                            }
-
-                            ts.end();   // Perform end-of-stream operations, e.g. set the final offset.
-                        }
-
+                    for (Deasciifier deasciifier : deasciifiers) {
+                        final String deasciiTerm = deasciifier.deasciify(asciiTerm);
+                        if (!deasciiTerm.equals(term))
+                            deasciifier.incrementWrongTermCount();
                     }
+
+                    if (collisions.containsKey(asciiTerm))
+                        collisions.get(asciiTerm).add(term);
+                    else {
+                        Multiset<String> list = HashMultiset.create();
+                        list.add(term);
+                        collisions.put(asciiTerm, list);
+                    }
+
+                    ts.end();   // Perform end-of-stream operations, e.g. set the final offset.
                 }
+
             }
 
         }
 
-        for (Deasciifier deasciifier : deasciifiers) {
-            deasciifier.printAccuracy(numTerms);
-        }
 
         prune(collisions, 1);
 
@@ -285,5 +266,8 @@ public class IntrinsicEvaluator {
 
             }
 
+        for (Deasciifier deasciifier : deasciifiers) {
+            deasciifier.printAccuracy(numTerms);
+        }
     }
 }
