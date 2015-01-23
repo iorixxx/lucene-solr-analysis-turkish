@@ -19,46 +19,59 @@ package org.apache.lucene.benchmark.quality.mc;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import info.bliki.wiki.dump.IArticleFilter;
+import info.bliki.wiki.dump.Siteinfo;
+import info.bliki.wiki.dump.WikiArticle;
+import info.bliki.wiki.dump.WikiXMLParser;
+import info.bliki.wiki.filter.PlainTextConverter;
+import info.bliki.wiki.model.WikiModel;
 import net.zemberek.erisim.Zemberek;
 import net.zemberek.islemler.cozumleme.CozumlemeSeviyesi;
 import net.zemberek.tr.yapi.TurkiyeTurkcesi;
 import net.zemberek.yapi.Kelime;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.core.LetterTokenizer;
+import org.apache.lucene.analysis.miscellaneous.LengthFilter;
 import org.apache.lucene.analysis.standard.ClassicFilter;
+import org.apache.lucene.analysis.standard.ClassicTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tr.ApostropheFilter;
 import org.apache.lucene.analysis.tr.TurkishDeasciifyFilter;
 import org.apache.lucene.analysis.tr.TurkishLowerCaseFilter;
 import org.apache.lucene.util.Version;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.io.StringReader;
 import java.util.*;
 
 /**
  * intrinsic evaluation of the different diacritics restoration systems
+ * on a Turkish Wikipedia dump from January 2015.
+ * Downloaded from http://dumps.wikimedia.org/trwiki/20150121/trwiki-20150121-pages-meta-current.xml.bz2
  */
 public class IntrinsicEvaluator {
 
     static abstract class Deasciifier {
 
         int wrongTerms = 0;
+        int numTerms = 0;
 
         public Deasciifier() {
-            wrongTerms = 0;
+            wrongTerms = numTerms = 0;
         }
 
         void incrementWrongTermCount() {
             wrongTerms++;
         }
 
-        int getWrongTermCount() {
-            return wrongTerms;
+        void incrementNumTerms() {
+            numTerms++;
+        }
+
+        void printAccuracy() {
+            printAccuracy(numTerms);
         }
 
         void printAccuracy(int numTerms) {
@@ -115,17 +128,18 @@ public class IntrinsicEvaluator {
 
         @Override
         protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
-            final LetterTokenizer src = new LetterTokenizer(Version.LUCENE_48, reader);
-            // src.setMaxTokenLength(255);
+            final ClassicTokenizer src = new ClassicTokenizer(Version.LUCENE_48, reader);
+            src.setMaxTokenLength(255);
             TokenStream tok = new ClassicFilter(src);
             tok = new ApostropheFilter(tok);
+            tok = new LengthFilter(Version.LUCENE_48, tok, 3, 255);
             tok = new TurkishLowerCaseFilter(tok);
 
 
             return new TokenStreamComponents(src, tok) {
                 @Override
                 protected void setReader(final Reader reader) throws IOException {
-                    //src.setMaxTokenLength(255);
+                    src.setMaxTokenLength(255);
                     super.setReader(reader);
                 }
             };
@@ -133,30 +147,10 @@ public class IntrinsicEvaluator {
     }
 
 
-    static List<Path> discoverTextFiles(Path p, String pattern) {
-
-        final PathMatcher matcher = FileSystems.getDefault().getPathMatcher(pattern);
-        final List<Path> txtFiles = new ArrayList<>();
-
-        FileVisitor<Path> fv = new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-
-                Path name = file.getFileName();
-                if (name != null && matcher.matches(name))
-                    txtFiles.add(file);
-                return FileVisitResult.CONTINUE;
-            }
-        };
-
-        try {
-            Files.walkFileTree(p, fv);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return txtFiles;
-    }
-
+    static int globalCounter = 0;
+    static final WikiModel model = new WikiModel("", "");
+    static final Deasciifier[] deasciifiers = new Deasciifier[]{new ZemberekDeasciifier(), new TurkishDeasciifier()};
+    static final Map<String, Multiset<String>> collisions = new HashMap<>();
     static final Set<Character> accentedCharSet = new HashSet<>(SolrSearcher.TURKISH_CHARACTERS.length);
 
     static {
@@ -164,11 +158,24 @@ public class IntrinsicEvaluator {
         for (int j = 0; j < SolrSearcher.TURKISH_CHARACTERS.length; j++)
             accentedCharSet.add(SolrSearcher.TURKISH_CHARACTERS[j]);
 
-        for (int j = 0; j < SolrSearcher.ENGLISH_CHARACTERS.length; j++)
-            accentedCharSet.add(SolrSearcher.ENGLISH_CHARACTERS[j]);
+        //  for (int j = 0; j < SolrSearcher.ENGLISH_CHARACTERS.length; j++)
+        //     accentedCharSet.add(SolrSearcher.ENGLISH_CHARACTERS[j]);
+    }
+
+    static boolean isComposedOfLetterOnly(final CharTermAttribute termAtt) {
+
+        final char[] buffer = termAtt.buffer();
+        final int length = termAtt.length();
+
+        for (int i = 0; i < length; i++)
+            if (!Character.isLetter(buffer[i])) return false;
+
+        return true;
+
     }
 
     static boolean containsTurkishAccentedChar(final CharTermAttribute termAtt) {
+
         final char[] buffer = termAtt.buffer();
         final int length = termAtt.length();
 
@@ -180,6 +187,7 @@ public class IntrinsicEvaluator {
     }
 
     static void prune(Map<String, Multiset<String>> map, int minTF) {
+
         for (Map.Entry<String, Multiset<String>> entry : map.entrySet()) {
             Multiset<String> set = entry.getValue();
 
@@ -194,42 +202,39 @@ public class IntrinsicEvaluator {
                     iterator.remove();
 
             }
-
-
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    static class DemoArticleFilter implements IArticleFilter {
 
-        Deasciifier[] deasciifiers = new Deasciifier[]{new ZemberekDeasciifier(), new TurkishDeasciifier()};
+        @Override
+        public void process(WikiArticle page, Siteinfo siteinfo) throws SAXException {
 
-        Map<String, Multiset<String>> collisions = new HashMap<>();
+            String plainString = model.render(new PlainTextConverter(), page.toString());
 
-
-        int numTerms = 0;
-        int c = 0;
-
-        for (Path path : discoverTextFiles(Paths.get("/Volumes/data/collection-20072011/"), "glob:*.txt")) {
-            System.out.println("processing file : " + path);
-
-            //   if (++c % 7 == 0) break;
             Analyzer analyzer = new TurkishAnalyzer();
-            try (TokenStream ts = analyzer.tokenStream("field", Files.newBufferedReader(path, StandardCharsets.UTF_8))) {
+            try (TokenStream ts = analyzer.tokenStream("field", new StringReader(plainString))) {
 
                 final CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);
                 ts.reset(); // Resets this stream to the beginning. (Required)
                 while (ts.incrementToken()) {
 
+                    if (!isComposedOfLetterOnly(termAtt)) continue;
+
+                    globalCounter++;
+
                     if (!containsTurkishAccentedChar(termAtt))
                         continue;
 
-                    numTerms++;
 
                     final String term = termAtt.toString();
 
                     final String asciiTerm = SolrSearcher.asciify(term);
 
                     for (Deasciifier deasciifier : deasciifiers) {
+
+                        deasciifier.incrementNumTerms();
+
                         final String deasciiTerm = deasciifier.deasciify(asciiTerm);
                         if (!deasciiTerm.equals(term))
                             deasciifier.incrementWrongTermCount();
@@ -246,28 +251,47 @@ public class IntrinsicEvaluator {
                     ts.end();   // Perform end-of-stream operations, e.g. set the final offset.
                 }
 
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
             }
-
         }
+    }
 
+    public static void main(String[] args) {
+
+        // http://dumps.wikimedia.org/trwiki/20150121/trwiki-20150121-pages-meta-current.xml.bz2
+        String bz2Filename = "/Users/iorixxx/trwiki-20150121-pages-meta-current.xml.bz2";
+
+        try {
+            IArticleFilter handler = new DemoArticleFilter();
+            WikiXMLParser wxp = new WikiXMLParser(bz2Filename, handler);
+            wxp.parse();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         prune(collisions, 1);
 
         List<Multiset<String>> allTheLists = new ArrayList<>(collisions.values());
         Collections.sort(allTheLists, new Comparator<Multiset<String>>() {
+            @Override
             public int compare(Multiset<String> a1, Multiset<String> a2) {
-                return a2.elementSet().size() - a1.elementSet().size(); // assumes you want biggest to smallest
+                // biggest to smallest
+                return a2.elementSet().size() - a1.elementSet().size();
             }
         });
 
-        for (int i = 0; i < allTheLists.size(); i++)
-            if (allTheLists.get(i).entrySet().size() > 1) {
-                System.out.println(allTheLists.get(i));
+        for (Multiset<String> set : allTheLists)
+            if (set.entrySet().size() > 1) {
+                System.out.println(set);
 
             }
 
         for (Deasciifier deasciifier : deasciifiers) {
-            deasciifier.printAccuracy(numTerms);
+            deasciifier.printAccuracy();
         }
+
+        System.out.println("Total number of words : " + globalCounter);
     }
+
 }
