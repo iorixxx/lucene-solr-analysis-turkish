@@ -17,6 +17,8 @@ package org.apache.lucene.benchmark.quality.mc;
  * limitations under the License.
  */
 
+import org.apache.commons.math3.stat.inference.TTest;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -32,6 +34,8 @@ import static org.apache.lucene.benchmark.quality.mc.SolrSearcher.*;
  * Evaluation class processes trec_eval outputs
  */
 public class Evaluator {
+
+  private static final TTest T_TEST = new TTest();
 
   public enum Metric {
     NDCG, ERR
@@ -57,14 +61,22 @@ public class Evaluator {
       String fileName = "out_" + "tr_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
       System.out.print(getMetric(metric, Paths.get(outputPath, fileName)) + " & ");
 
+      double[] baseline = getMetrics(metric, Paths.get(outputPath, fileName));
 
       fileName = "out_" + "ascii_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
-      System.out.print(getMetric(metric, Paths.get(outputPath, fileName)) + " & ");
+      double[] ascii = getMetrics(metric, Paths.get(outputPath, fileName));
+      System.out.print(getMetric(metric, Paths.get(outputPath, fileName)));
+
+      if (T_TEST.pairedTTest(baseline, ascii, 0.05)) System.out.print("\\textsuperscript{\\dagger}");
+
+      System.out.print(" & ");
 
       int i = 1;
       for (String deasciifier : deasciifiers) {
         fileName = "out_" + deasciifier + "_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
+        double[] deascii = getMetrics(metric, Paths.get(outputPath, fileName));
         System.out.print(getMetric(metric, Paths.get(outputPath, fileName)));
+        if (T_TEST.pairedTTest(baseline, deascii, 0.05)) System.out.print("\\textsuperscript{\\dagger}");
 
         i++;
 
@@ -77,6 +89,45 @@ public class Evaluator {
 
       System.out.println();
       System.out.println("\\hline");
+    }
+  }
+
+  public static void printTTestData(String metric, SolrSearcher.QueryLength queryLength, String outputPath) throws IOException {
+
+
+    for (String stemmer : stemmers) {
+
+      if (stemmer.length() < 3)
+        System.out.println(stemmer + " \t\t\t& ");
+      else
+        System.out.println(stemmer + " \t& ");
+
+      String fileName = "out_" + "tr_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
+      System.out.println(Arrays.toString(getMetrics(metric, Paths.get(outputPath, fileName))).replace(",", "\t"));
+
+      double[] baseline = getMetrics(metric, Paths.get(outputPath, fileName));
+
+
+      fileName = "out_" + "ascii_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
+      System.out.println(Arrays.toString(getMetrics(metric, Paths.get(outputPath, fileName))).replace(",", "\t"));
+
+      double[] ascii = getMetrics(metric, Paths.get(outputPath, fileName));
+
+      System.out.println("ascii " + T_TEST.pairedTTest(baseline, ascii, 0.05) + " " + T_TEST.pairedTTest(baseline, ascii));
+
+
+      for (String deasciifier : deasciifiers) {
+        fileName = "out_" + deasciifier + "_" + stemmer + "_" + queryLength.toString() + "_submitted.txt";
+        System.out.println(Arrays.toString(getMetrics(metric, Paths.get(outputPath, fileName))).replace(",", "\t"));
+
+        double[] deascii = getMetrics(metric, Paths.get(outputPath, fileName));
+        System.out.println(deasciifier + " " + T_TEST.pairedTTest(baseline, deascii, 0.05) + " " + T_TEST.pairedTTest(baseline, deascii));
+
+
+      }
+
+      System.out.println();
+
     }
   }
 
@@ -276,6 +327,24 @@ public class Evaluator {
     }
 
     throw new RuntimeException(metric + " metric cannot be found!");
+  }
+
+  static double[] getMetrics(String metric, Path fileName) throws IOException {
+
+    double results[] = new double[72];
+
+    List<String> lines = Files.readAllLines(fileName, StandardCharsets.US_ASCII);
+
+    int i = 0;
+
+    for (String line : lines) {
+      if (line.startsWith(metric) && !line.contains("all")) {
+        String[] parts = line.split("\\s+");
+        if (parts.length != 3) throw new RuntimeException("line should have three parts " + Arrays.toString(parts));
+        results[i++] = Double.parseDouble(parts[2]);
+      }
+    }
+    return results;
   }
 
   static String getMetric(String metric, Path fileName) throws IOException {
