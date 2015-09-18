@@ -18,14 +18,12 @@ package org.apache.lucene.analysis.tr;
  */
 
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.miscellaneous.StemmerOverrideFilter;
 import org.apache.lucene.analysis.util.ResourceLoader;
 import org.apache.lucene.analysis.util.ResourceLoaderAware;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,10 +40,6 @@ import java.util.Map;
  */
 public class TRMorphStemFilterFactory extends TokenFilterFactory implements ResourceLoaderAware {
 
-
-    private StemmerOverrideFilter.StemmerOverrideMap cache;
-    boolean ignoreCase = false;
-    private final String cacheFiles;
     private final String strategy;
     private final String lookup_fst;
 
@@ -56,7 +50,6 @@ public class TRMorphStemFilterFactory extends TokenFilterFactory implements Reso
         final String lookup;
         final String fst;
 
-        cacheFiles = get(args, "cache");
         strategy = get(args, "strategy", "max");
         lookup = require(args, "lookup");
         fst = require(args, "fst");
@@ -93,28 +86,10 @@ public class TRMorphStemFilterFactory extends TokenFilterFactory implements Reso
 
     @Override
     public void inform(ResourceLoader loader) throws IOException {
-        if (cacheFiles != null) {
-            assureMatchVersion();
-            List<String> files = splitFileNames(cacheFiles);
-            if (files.size() > 0) {
-                StemmerOverrideFilter.Builder builder = new StemmerOverrideFilter.Builder(ignoreCase);
-                for (String file : files) {
-                    List<String> list = getLines(loader, file.trim());
-                    for (String line : list) {
-                        builder.add(line, TRMorphStemFilter.stem(line, strategy, lookup_fst));
-                    }
-                }
-                cache = builder.build();
-            }
-        }
     }
 
     @Override
     public TokenStream create(TokenStream input) {
-        TRMorphStemFilter filter = new TRMorphStemFilter(input, lookup_fst, strategy);
-        if (cache != null) {
-            filter.setCache(cache);
-        }
-        return filter;
+        return new TRMorphStemFilter(input, lookup_fst, strategy);
     }
 }

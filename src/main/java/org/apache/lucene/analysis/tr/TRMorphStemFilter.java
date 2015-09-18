@@ -19,14 +19,9 @@ package org.apache.lucene.analysis.tr;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.miscellaneous.StemmerOverrideFilter;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.KeywordAttribute;
 import org.apache.lucene.analysis.tr.util.Piper;
-import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.CharsRef;
-import org.apache.lucene.util.UnicodeUtil;
-import org.apache.lucene.util.fst.FST;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,19 +43,8 @@ public final class TRMorphStemFilter extends TokenFilter {
     private final CharTermAttribute termAttribute = addAttribute(CharTermAttribute.class);
     private final KeywordAttribute keywordAttribute = addAttribute(KeywordAttribute.class);
 
-    private StemmerOverrideFilter.StemmerOverrideMap cache;
-    private FST.BytesReader fstReader;
-
-    private final FST.Arc<BytesRef> scratchArc = new FST.Arc<>();
-    private final CharsRef spare = new CharsRef();
-
     private final String aggregation;
     private final String lookup_fst;
-
-    public void setCache(StemmerOverrideFilter.StemmerOverrideMap cache) {
-        this.cache = cache;
-        fstReader = cache.getBytesReader();
-    }
 
     public TRMorphStemFilter(TokenStream input, String lookup_fst, String aggregation) {
         super(input);
@@ -75,26 +59,10 @@ public final class TRMorphStemFilter extends TokenFilter {
         if (keywordAttribute.isKeyword()) return true;
 
         /**
-         * copied from {@link StemmerOverrideFilter#incrementToken}
-         */
-        if (cache != null) {
-            final BytesRef stem = cache.get(termAttribute.buffer(), termAttribute.length(), scratchArc, fstReader);
-            if (stem != null) {
-                final char[] buffer = spare.chars = termAttribute.buffer();
-                UnicodeUtil.UTF8toUTF16(stem.bytes, stem.offset, stem.length, spare);
-                if (spare.chars != buffer) {
-                    termAttribute.copyBuffer(spare.chars, spare.offset, spare.length);
-                }
-                termAttribute.setLength(spare.length);
-                return true;
-            }
-        }
-
-        /**
          *  copied from {@link org.apache.lucene.analysis.br.BrazilianStemFilter#incrementToken}
          */
         final String term = termAttribute.toString();
-        final String s = stem(term, aggregation, lookup_fst);
+        final String s = stem(term);
         // If not stemmed, don't waste the time adjusting the token.
         if ((s != null) && !s.equals(term))
             termAttribute.setEmpty().append(s);
@@ -102,9 +70,9 @@ public final class TRMorphStemFilter extends TokenFilter {
         return true;
     }
 
-    static String stem(String word, String aggregation, String lookup_sft) throws IOException {
+    String stem(String word) throws IOException {
 
-        List<String> parses = parse(word, lookup_sft);
+        List<String> parses = parse(word);
 
         TreeSet<String> set = new TreeSet<>();
 
@@ -143,7 +111,7 @@ public final class TRMorphStemFilter extends TokenFilter {
         }
     }
 
-    private static List<String> parse(String word, String lookup_fst) throws IOException {
+    private List<String> parse(String word) throws IOException {
         List<String> list = new ArrayList<>();
         java.lang.Runtime rt = java.lang.Runtime.getRuntime();
         java.lang.Process p2 = rt.exec(lookup_fst);

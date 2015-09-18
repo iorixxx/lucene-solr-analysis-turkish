@@ -18,7 +18,6 @@ package org.apache.lucene.analysis.tr.util;
  */
 
 import org.apache.lucene.analysis.util.CharArrayMap;
-import org.apache.lucene.util.Version;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -251,7 +250,7 @@ public final class PatternTableFactory {
 
                     }}
             );
-    static final Version version = Version.LUCENE_48;
+
     static final boolean ignoreCase = false;
 
     private PatternTableFactory() {

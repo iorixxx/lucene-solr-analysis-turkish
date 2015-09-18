@@ -19,13 +19,8 @@ package org.apache.lucene.analysis.tr;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.miscellaneous.StemmerOverrideFilter;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.KeywordAttribute;
-import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.CharsRef;
-import org.apache.lucene.util.UnicodeUtil;
-import org.apache.lucene.util.fst.FST;
 import zemberek.morphology.parser.MorphParse;
 import zemberek.morphology.parser.MorphParser;
 
@@ -43,12 +38,6 @@ public final class Zemberek3StemFilter extends TokenFilter {
     private static final StringLengthComparator STRING_LENGTH_COMPARATOR = new StringLengthComparator();
     private static final MorphemeComparator MORPHEME_COMPARATOR = new MorphemeComparator();
 
-    private StemmerOverrideFilter.StemmerOverrideMap cache;
-    private FST.BytesReader fstReader;
-
-    private final FST.Arc<BytesRef> scratchArc = new FST.Arc<>();
-    private final CharsRef spare = new CharsRef();
-
     private final MorphParser parser;
     private final String aggregation;
 
@@ -59,11 +48,6 @@ public final class Zemberek3StemFilter extends TokenFilter {
         super(input);
         this.parser = parser;
         this.aggregation = aggregation;
-    }
-
-    public void setCache(StemmerOverrideFilter.StemmerOverrideMap cache) {
-        this.cache = cache;
-        fstReader = cache.getBytesReader();
     }
 
     private static class StringLengthComparator implements Comparator<String> {
@@ -166,22 +150,6 @@ public final class Zemberek3StemFilter extends TokenFilter {
 
         if (!input.incrementToken()) return false;
         if (keywordAttribute.isKeyword()) return true;
-
-        /**
-         * copied from {@link StemmerOverrideFilter#incrementToken}
-         */
-        if (cache != null) {
-            final BytesRef stem = cache.get(termAttribute.buffer(), termAttribute.length(), scratchArc, fstReader);
-            if (stem != null) {
-                final char[] buffer = spare.chars = termAttribute.buffer();
-                UnicodeUtil.UTF8toUTF16(stem.bytes, stem.offset, stem.length, spare);
-                if (spare.chars != buffer) {
-                    termAttribute.copyBuffer(spare.chars, spare.offset, spare.length);
-                }
-                termAttribute.setLength(spare.length);
-                return true;
-            }
-        }
 
         /**
          *  copied from {@link org.apache.lucene.analysis.br.BrazilianStemFilter#incrementToken}

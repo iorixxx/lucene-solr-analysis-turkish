@@ -68,7 +68,7 @@ public class App {
             "\n" +
             "    static final CharArrayMap<Integer> map =\n" +
             "    CharArrayMap.unmodifiableMap(\n" +
-            "    new CharArrayMap<Integer>(PatternTableFactory.version, %d, PatternTableFactory.ignoreCase)\n" +
+            "    new CharArrayMap<Integer>(%d, PatternTableFactory.ignoreCase)\n" +
             "    {{";
 
     public static void main(String[] args) throws IOException {

@@ -31,7 +31,6 @@ import org.apache.lucene.analysis.tokenattributes.KeywordAttribute;
 import org.apache.lucene.analysis.util.ResourceLoader;
 import org.apache.lucene.analysis.util.ResourceLoaderAware;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
-import org.apache.lucene.util.Version;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -155,7 +154,10 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
 
         Zemberek2StemFilterFactory factory = new Zemberek2StemFilterFactory(map);
 
-        TokenStream stream = factory.create(new WhitespaceTokenizer(Version.LUCENE_48, reader));
+        WhitespaceTokenizer whitespaceTokenizer = new WhitespaceTokenizer();
+        whitespaceTokenizer.setReader(reader);
+
+        TokenStream stream = factory.create(whitespaceTokenizer);
 
         CharTermAttribute termAttribute = stream.getAttribute(CharTermAttribute.class);
 
@@ -166,5 +168,6 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
             System.out.println(term);
         }
         stream.end();
+        reader.close();
     }
 }

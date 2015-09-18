@@ -1,5 +1,0 @@
-curl 'http://localhost:8983/solr/catA/update?fieldnames=id,text&commit=true&separator=%09&escape=\' --data-binary @mc.csv -H 'Content-type:application/csv; charset=utf-8'
-curl 'http://localhost:8983/solr/catB/update?fieldnames=id,text&commit=true&separator=%09&escape=\' --data-binary @mc.csv -H 'Content-type:application/csv; charset=utf-8'
-
-SELECT docno as id, concat_ws(' ', headline,text) as content INTO OUTFILE '/tmp/mc.csv' FROM documents;
-SELECT QueryID, Topic, Description INTO OUTFILE '/tmp/queries.csv' FROM queries;

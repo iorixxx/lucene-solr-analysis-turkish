@@ -18,37 +18,29 @@ package org.apache.lucene.tr;
  */
 
 import org.apache.lucene.analysis.BaseTokenStreamTestCase;
-import org.apache.lucene.analysis.MockTokenizer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tr.TurkishDeasciifyFilter;
-
-import java.io.IOException;
-import java.io.StringReader;
+import org.apache.lucene.analysis.tr.TurkishDeASCIIfyFilter;
 
 /**
- * Simple tests to ensure Turkish deasciifiy filter factory is working.
+ * Simple tests to ensure Turkish deASCIIfy filter factory is working.
  */
-public class TestTurkishDeasciifyFilter extends BaseTokenStreamTestCase {
+public class TestTurkishDeASCIIfyFilter extends BaseTokenStreamTestCase {
 
-    protected static MockTokenizer whitespaceMockTokenizer(String input) throws IOException {
-        return new MockTokenizer(new StringReader(input));
+    public void testDeAscii2() throws Exception {
+        TokenStream stream = whitespaceMockTokenizer("tatlises akgunduz sakip cernobil baslattigi dayanikliklarini");
+        stream = new TurkishDeASCIIfyFilter(stream, false);
+        assertTokenStreamContents(stream, new String[]{"tatlıses", "akgündüz", "sakıp", "çernobil", "başlattığı", "dayanıklıklarını"});
     }
-
-  public void testDeAscii2() throws Exception {
-    TokenStream stream = whitespaceMockTokenizer("tatlises akgunduz sakip cernobil baslattigi dayanikliklarini");
-    stream = new TurkishDeasciifyFilter(stream, false);
-    assertTokenStreamContents(stream, new String[]{"tatlıses", "akgündüz", "sakıp", "çernobil", "başlattığı", "dayanıklıklarını"});
-  }
 
     public void testDeAscii() throws Exception {
         TokenStream stream = whitespaceMockTokenizer("kus fadil akgunduz dogalgaz ahmet");
-        stream = new TurkishDeasciifyFilter(stream, false);
+        stream = new TurkishDeASCIIfyFilter(stream, false);
         assertTokenStreamContents(stream, new String[]{"kuş", "fadıl", "akgündüz", "doğalgaz", "ahmet"});
     }
 
     public void testPreserveOriginal() throws Exception {
         TokenStream stream = whitespaceMockTokenizer("kus fadil akgunduz dogalgaz ahmet izmir");
-        stream = new TurkishDeasciifyFilter(stream, true);
+        stream = new TurkishDeASCIIfyFilter(stream, true);
         assertTokenStreamContents(stream, new String[]{
                 "kuş", "kus",
                 "fadıl", "fadil",

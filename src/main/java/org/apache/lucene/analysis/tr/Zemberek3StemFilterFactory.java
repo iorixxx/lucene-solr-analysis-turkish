@@ -19,7 +19,6 @@ package org.apache.lucene.analysis.tr;
 
 
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.miscellaneous.StemmerOverrideFilter;
 import org.apache.lucene.analysis.util.ResourceLoader;
 import org.apache.lucene.analysis.util.ResourceLoaderAware;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
@@ -54,18 +53,14 @@ import java.util.Map;
 public class Zemberek3StemFilterFactory extends TokenFilterFactory implements ResourceLoaderAware {
 
     private MorphParser parser;
-    private StemmerOverrideFilter.StemmerOverrideMap cache;
-    boolean ignoreCase = false;
 
     private final String strategy;
     private final String dictionaryFiles;
-    private final String cacheFiles;
 
     public Zemberek3StemFilterFactory(Map<String, String> args) {
         super(args);
         dictionaryFiles = require(args, "dictionary");
         strategy = get(args, "strategy", "maxLength");
-        cacheFiles = get(args, "cache");
 
         if (!args.isEmpty()) {
             throw new IllegalArgumentException("Unknown parameters: " + args);
@@ -91,30 +86,11 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
         DynamicLexiconGraph graph = new DynamicLexiconGraph(suffixProvider);
         graph.addDictionaryItems(lexicon);
         parser = new SimpleParser(graph);
-
-        if (cacheFiles != null) {
-            assureMatchVersion();
-            List<String> files = splitFileNames(cacheFiles);
-            if (files.size() > 0) {
-                StemmerOverrideFilter.Builder builder = new StemmerOverrideFilter.Builder(ignoreCase);
-                for (String file : files) {
-                    List<String> list = getLines(loader, file.trim());
-                    for (String line : list) {
-                        builder.add(line, Zemberek3StemFilter.stem(parser.parse(line), strategy));
-                    }
-                }
-                cache = builder.build();
-            }
-        }
     }
 
     @Override
     public TokenStream create(TokenStream input) {
-        Zemberek3StemFilter filter = new Zemberek3StemFilter(input, parser, strategy);
-        if (cache != null) {
-            filter.setCache(cache);
-        }
-        return filter;
+        return new Zemberek3StemFilter(input, parser, strategy);
     }
 
     public static void parse(String word, TurkishMorphParser parser) {
