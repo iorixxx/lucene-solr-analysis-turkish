@@ -22,8 +22,8 @@ This one is not production ready yet. It requires Operating System specific [fom
 I couldn't find an elegant way to convert `foma` to java. I am using *"executing shell commands in Java to call `flookup`"* workaround advised in [FAQ] (http://code.google.com/p/foma/wiki/FAQ). If you know something better please let me know.
 
 **Arguments**
-⋅⋅* `lookup`: Absolute path of the OS specific [foma](https://code.google.com/p/foma/) executable.
-⋅⋅* `fst`:  Absolute path of the stem.fst file.
+  * `lookup`: Absolute path of the OS specific [foma](https://code.google.com/p/foma/) executable.
+  * `fst`:  Absolute path of the stem.fst file.
 
 **Example**
 ``` xml
@@ -77,8 +77,8 @@ You need three jars : zemberek-morphology-0.9.1.jar zemberek-core-0.9.1.jar Turk
 Here is the [difference](https://github.com/iorixxx/zemberek-nlp/commit/3926bcf3bc719da874e72089d854532cde37d42b) over original repository.
 
 **Arguments**
-⋅⋅* `strategy`: Strategy to choose one of the multiple stem forms by selecting either longest or shortest stem. Valid values are maxLength (the default) or minLength.
-⋅⋅* `dictionary`: Zemberek3's dictionary (*.dict) files, which can be download from [here](https://github.com/ahmetaa/zemberek-nlp/tree/master/morphology/src/main/resources/tr) and could be modified if required.
+  * `strategy`: Strategy to choose one of the multiple stem forms by selecting either longest or shortest stem. Valid values are maxLength (the default) or minLength.
+  * `dictionary`: Zemberek3's dictionary (*.dict) files, which can be download from [here](https://github.com/ahmetaa/zemberek-nlp/tree/master/morphology/src/main/resources/tr) and could be modified if required.
 
 **Example**
 ``` xml
@@ -98,7 +98,7 @@ Translation of [Emacs Turkish mode](http://www.denizyuret.com/2006/11/emacs-turk
 This filter is intended to be used to allow *diacritics-insensitive search* for Turkish.
 
 **Arguments**
-⋅⋅* `preserveOriginal`: (true/false) If **true**, the original token is preserved. The default is **false**.
+  * `preserveOriginal`: (true/false) If **true**, the original token is preserved. The default is **false**.
 
 **Example**
 ``` xml
