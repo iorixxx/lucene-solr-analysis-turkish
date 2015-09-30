@@ -72,8 +72,7 @@ Turkish DeASCIIfier based on [Zemberek2](https://code.google.com/p/zemberek/).
 
 #### Zemberek3StemFilter(Factory)
 ___
-Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp)
-Download [tr](https://github.com/iorixxx/zemberek-nlp/tree/master/morphology/src/main/resources/tr) folder which contains dictionary files, and put it under solr/collection1/conf.
+Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp).
 Please note that zemberek-* jars should be generated from [my fork](https://github.com/iorixxx/zemberek-nlp/).
 Here is the [difference](https://github.com/iorixxx/zemberek-nlp/commit/3926bcf3bc719da874e72089d854532cde37d42b) over original repository.
 
