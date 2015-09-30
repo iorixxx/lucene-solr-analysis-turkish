@@ -24,11 +24,11 @@ I couldn't find an elegant way to convert `foma` to java.
 I am using *"executing shell commands in Java to call `flookup`"* workaround advised in [FAQ] (http://code.google.com/p/foma/wiki/FAQ).
 If you know something better please let me know.
 
-**Arguments**
+**Arguments**:
   * `lookup`: Absolute path of the OS specific [foma](https://code.google.com/p/foma/) executable.
   * `fst`: Absolute path of the stem.fst file.
 
-**Example**
+**Example**:
 ``` xml
 <analyzer>
   <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -36,17 +36,17 @@ If you know something better please let me know.
 </analyzer>
 ```
 
-##### Zemberek2StemFilter(Factory)
+#### Zemberek2StemFilter(Factory)
 ___
 Turkish Stemmer based on [Zemberek2](https://code.google.com/p/zemberek/).
 
 **JARs**: zemberek-cekirdek-2.1.3.jar zemberek-tr-2.1.3.jar
 
-**Arguments**
+**Arguments**:
   * `strategy`: Strategy to choose one of the multiple stem forms. Valid values are maxLength (the default), minLength, maxMorpheme, minMorpheme, frequency, or first.
   * `dictionary`: Zemberek3's dictionary (*.dict) files, which can be download from [here](https://github.com/ahmetaa/zemberek-nlp/tree/master/morphology/src/main/resources/tr) and could be modified if required.
 
-**Example**
+**Example**:
 ``` xml
 <analyzer>
   <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -62,8 +62,7 @@ Turkish DeASCIIfier based on [Zemberek2](https://code.google.com/p/zemberek/).
 
 **Arguments**: None
 
-**Example**
-
+**Example**:
 ``` xml
 <analyzer>
   <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -80,11 +79,11 @@ Here is the [difference](https://github.com/iorixxx/zemberek-nlp/commit/3926bcf3
 
 **JARs**: zemberek-morphology-0.9.1.jar zemberek-core-0.9.1.jar
 
-**Arguments**
+**Arguments**:
   * `strategy`: Strategy to choose one of the multiple stem forms by selecting either longest or shortest stem. Valid values are maxLength (the default) or minLength.
   * `dictionary`: Zemberek3's dictionary (*.dict) files, which can be download from [here](https://github.com/ahmetaa/zemberek-nlp/tree/master/morphology/src/main/resources/tr) and could be modified if required.
 
-**Example**
+**Example**:
 ``` xml
 <analyzer>
   <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -97,10 +96,10 @@ ___
 Translation of [Emacs Turkish mode](http://www.denizyuret.com/2006/11/emacs-turkish-mode.html) from Lisp into Java.
 This filter is intended to be used to allow *diacritics-insensitive search* for Turkish.
 
-**Arguments**
+**Arguments**:
   * `preserveOriginal`: (true/false) If **true**, the original token is preserved. The default is **false**.
 
-**Example**
+**Example**:
 ``` xml
 <analyzer>
   <tokenizer class="solr.StandardTokenizerFactory"/>
