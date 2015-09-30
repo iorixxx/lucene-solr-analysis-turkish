@@ -1,4 +1,4 @@
-## Turkish analysis components for Apache Lucene/Solr 5.3.0
+## Turkish analysis components for Apache Lucene/Solr
 
 The use of *Open Source Software* is gaining increasing momentum in Turkey.
 Turkish users on Apache Lucene/Solr (and other [Apache Projects](https://projects.apache.org/projects.html)) mailing lists are increasing.
