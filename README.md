@@ -97,6 +97,7 @@ Here is the [difference](https://github.com/iorixxx/zemberek-nlp/commit/3926bcf3
 
 5.
 **TurkishDeASCIIfyFilter(Factory)**
+___
 Translation of [Emacs Turkish mode](http://www.denizyuret.com/2006/11/emacs-turkish-mode.html) from Lisp into Java.
 This filter is intended to be used to allow *diacritics-insensitive search* for Turkish.
 
