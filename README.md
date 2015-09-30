@@ -38,7 +38,7 @@ If you know something better please let me know.
   <filter class="org.apache.lucene.analysis.tr.TRMorphStemFilterFactory" lookup="/Applications/foma/flookup" fst="/Volumes/datadisk/Desktop/TRmorph-master/stem.fst" />
 </analyzer>
 ```
-
+---
 2.
 **Zemberek2StemFilter(Factory)**
 Turkish Stemmer based on [Zemberek2](https://code.google.com/p/zemberek/).
@@ -106,6 +106,7 @@ This filter is intended to be used to allow *diacritics-insensitive search* for 
 **Example**
 ``` xml
 <analyzer>
+  <tokenizer class="solr.StandardTokenizerFactory"/>
   <filter class="org.apache.lucene.analysis.tr.TurkishDeASCIIfyFilterFactory" preserveOriginal="false"/>
 </analyzer>
  ```
