@@ -36,8 +36,7 @@ If you know something better please let me know.
 </analyzer>
 ```
 
-2.
-**Zemberek2StemFilter(Factory)**
+##### Zemberek2StemFilter(Factory)
 ___
 Turkish Stemmer based on [Zemberek2](https://code.google.com/p/zemberek/).
 
@@ -55,8 +54,7 @@ Turkish Stemmer based on [Zemberek2](https://code.google.com/p/zemberek/).
 </analyzer>
 ```
 
-3.
-**Zemberek2DeASCIIfyFilter(Factory)**
+#### Zemberek2DeASCIIfyFilter(Factory)
 ___
 Turkish DeASCIIfier based on [Zemberek2](https://code.google.com/p/zemberek/).
 
@@ -73,8 +71,7 @@ Turkish DeASCIIfier based on [Zemberek2](https://code.google.com/p/zemberek/).
 </analyzer>
 ```
 
-4.
-**Zemberek3StemFilter(Factory)**
+#### Zemberek3StemFilter(Factory)
 ___
 Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp)
 Download [tr](https://github.com/iorixxx/zemberek-nlp/tree/master/morphology/src/main/resources/tr) folder which contains dictionary files, and put it under solr/collection1/conf.
@@ -95,8 +92,7 @@ Here is the [difference](https://github.com/iorixxx/zemberek-nlp/commit/3926bcf3
 </analyzer>
 ```
 
-5.
-**TurkishDeASCIIfyFilter(Factory)**
+#### TurkishDeASCIIfyFilter(Factory)
 ___
 Translation of [Emacs Turkish mode](http://www.denizyuret.com/2006/11/emacs-turkish-mode.html) from Lisp into Java.
 This filter is intended to be used to allow *diacritics-insensitive search* for Turkish.
