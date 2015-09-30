@@ -118,10 +118,10 @@ This filter is intended to be used to allow *diacritics-insensitive search* for 
 
 I will post benchmark results of different field types (different stemmers) designed for different use-cases.
 
-##Dependencies
+## Dependencies
 * JRE 1.7 or above
 * Apache Maven 3.0.3 or above
 * Apache Lucene (Solr) 5.3.0
 
-##Author
+## Author
 Please feel free to contact Ahmet Arslan at `iorixxx at yahoo dot com` if you have any questions, comments or contributions.
