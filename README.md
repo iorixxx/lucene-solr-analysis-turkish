@@ -20,7 +20,7 @@ The location for the `lib` directory is near the solr.xml file.
 
 1.
 **TRMorphStemFilter(Factory)**
----
+___
 Turkish Stemmer based on [TRmorph](https://github.com/coltekin/TRmorph).
 This one is not production ready yet.
 It requires Operating System specific [foma](https://code.google.com/p/foma/) executable.
@@ -42,7 +42,7 @@ If you know something better please let me know.
 
 2.
 **Zemberek2StemFilter(Factory)**
----
+___
 Turkish Stemmer based on [Zemberek2](https://code.google.com/p/zemberek/).
 
 **JARs**: zemberek-cekirdek-2.1.3.jar zemberek-tr-2.1.3.jar
@@ -61,7 +61,7 @@ Turkish Stemmer based on [Zemberek2](https://code.google.com/p/zemberek/).
 
 3.
 **Zemberek2DeASCIIfyFilter(Factory)**
----
+___
 Turkish DeASCIIfier based on [Zemberek2](https://code.google.com/p/zemberek/).
 
 **JARs**: zemberek-cekirdek-2.1.3.jar zemberek-tr-2.1.3.jar
@@ -79,7 +79,7 @@ Turkish DeASCIIfier based on [Zemberek2](https://code.google.com/p/zemberek/).
 
 4.
 **Zemberek3StemFilter(Factory)**
----
+___
 Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp)
 Download [tr](https://github.com/iorixxx/zemberek-nlp/tree/master/morphology/src/main/resources/tr) folder which contains dictionary files, and put it under solr/collection1/conf.
 Please note that zemberek-* jars should be generated from [my fork](https://github.com/iorixxx/zemberek-nlp/).
@@ -101,7 +101,7 @@ Here is the [difference](https://github.com/iorixxx/zemberek-nlp/commit/3926bcf3
 
 5.
 **TurkishDeASCIIfyFilter(Factory)**
----
+___
 Translation of [Emacs Turkish mode](http://www.denizyuret.com/2006/11/emacs-turkish-mode.html) from Lisp into Java.
 This filter is intended to be used to allow *diacritics-insensitive search* for Turkish.
 
