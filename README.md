@@ -15,7 +15,7 @@ To load the plugins, place specified JAR files (along with TurkishAnalysis-5.3.0
 This directory does not exist in the distribution, so you would need to create it for the first time. 
 The location for the `lib` directory is near the solr.xml file.
 
-### TRMorphStemFilter(Factory)
+#### TRMorphStemFilter(Factory)
 ___
 Turkish Stemmer based on [TRmorph](https://github.com/coltekin/TRmorph).
 This one is not production ready yet.
