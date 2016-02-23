@@ -123,7 +123,7 @@ If you use this library for a research purpose, please use the following citatio
 @article{
   author = "Ahmet Arslan",
   title = "DeASCIIfication approach to handle diacritics in Turkish information retrieval",
-  journal = "Information Processing & Management ",
+  journal = "Information Processing & Management",
   volume = "52",
   number = "2",
   pages = "326 - 339",
