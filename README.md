@@ -115,3 +115,20 @@ I will post benchmark results of different field types (different stemmers) desi
 
 ## Author
 Please feel free to contact Ahmet Arslan at `iorixxx at yahoo dot com` if you have any questions, comments or contributions.
+
+## Citation Policy
+If you use this library for a research purpose, please use the following citation:
+
+``` tex
+@article{
+  author = "Ahmet Arslan",
+  title = "DeASCIIfication approach to handle diacritics in Turkish information retrieval",
+  journal = "Information Processing & Management ",
+  volume = "52",
+  number = "2",
+  pages = "326 - 339",
+  year = "2016",
+  doi = "http://dx.doi.org/10.1016/j.ipm.2015.08.004",
+  url = "http://www.sciencedirect.com/science/article/pii/S0306457315001053"  
+}
+```
