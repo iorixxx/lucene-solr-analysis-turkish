@@ -73,10 +73,10 @@ Turkish DeASCIIfier based on [Zemberek2](https://code.google.com/p/zemberek/).
 #### Zemberek3StemFilter(Factory)
 ___
 Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp).
-Please note that zemberek-* jars should be generated from [my fork](https://github.com/iorixxx/zemberek-nlp/).
-Here is the [difference](https://github.com/iorixxx/zemberek-nlp/commit/3926bcf3bc719da874e72089d854532cde37d42b) over original repository.
+Please note that zemberek-* jars should be generated and deployed to local maven repository `mvn install` using [my fork](https://github.com/iorixxx/zemberek-nlp/).
+Here is the [difference](https://github.com/ahmetaa/zemberek-nlp/pull/46) over original repository.
 
-**JARs**: zemberek-morphology-0.9.1.jar zemberek-core-0.9.1.jar
+**JARs**: zemberek-morphology-0.9.2.jar zemberek-core-0.9.2.jar
 
 **Arguments**:
   * `strategy`: Strategy to choose one of the multiple stem forms by selecting either longest or shortest stem. Valid values are maxLength (the default) or minLength.

@@ -22,7 +22,6 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.util.ResourceLoader;
 import org.apache.lucene.analysis.util.ResourceLoaderAware;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
-import zemberek.morphology.apps.TurkishMorphParser;
 import zemberek.morphology.lexicon.RootLexicon;
 import zemberek.morphology.lexicon.SuffixProvider;
 import zemberek.morphology.lexicon.graph.DynamicLexiconGraph;
@@ -30,7 +29,8 @@ import zemberek.morphology.lexicon.tr.TurkishDictionaryLoader;
 import zemberek.morphology.lexicon.tr.TurkishSuffixes;
 import zemberek.morphology.parser.MorphParse;
 import zemberek.morphology.parser.MorphParser;
-import zemberek.morphology.parser.SimpleParser;
+import zemberek.morphology.parser.WordParser;
+import zemberek.morphology.parser.tr.TurkishWordParserGenerator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -85,7 +85,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
         RootLexicon lexicon = new TurkishDictionaryLoader(suffixProvider).load(lines);
         DynamicLexiconGraph graph = new DynamicLexiconGraph(suffixProvider);
         graph.addDictionaryItems(lexicon);
-        parser = new SimpleParser(graph);
+        parser = new WordParser(graph);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
         return new Zemberek3StemFilter(input, parser, strategy);
     }
 
-    public static void parse(String word, TurkishMorphParser parser) {
+    public static void parse(String word, MorphParser parser) {
 
         List<MorphParse> parses = parser.parse(word);
         System.out.println("Word = " + word + " has " + parses.size() + " many solutions");
@@ -119,7 +119,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
 
     public static void main(String[] args) throws IOException {
 
-        TurkishMorphParser parser = TurkishMorphParser.createWithDefaults();
+        TurkishWordParserGenerator parser = TurkishWordParserGenerator.createWithDefaults();
 
 
         String a = "kuş asisi ortaklar çekişme masalı İCARETİN DE ARTMASI BEKLENİYOR\n" +
@@ -128,7 +128,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
         a = a.toLowerCase(Locale.forLanguageTag("tr"));
 
         for (String s : a.split("\\s+")) {
-            parse(s, parser);
+            parse(s, parser.getParser());
         }
 
     }
