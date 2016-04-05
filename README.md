@@ -10,6 +10,9 @@ For example; *altın*, *alim*, *alın*, *altan*, and *alıntı* are all reduced 
 In other words, they are treated as if they were the same word even though they have completely different meanings.
 I will post some other harmful collisions here.
 
+Please note that zemberek-morphology-0.9.2.jar and zemberek-core-0.9.2.jar should be generated and deployed to your local maven repository by invoking `mvn install` command on the [master branch](https://github.com/ahmetaa/zemberek-nlp), which hasn't been released yet.
+We will be able to consume the JARs from maven repository after zemberek-nlp [0.9.2 release](https://github.com/ahmetaa/zemberek-nlp/issues/47).
+
 Currently we have five custom TokenFilters.
 To load the plugins, place specified JAR files (along with TurkishAnalysis-5.3.0.jar, which can be created by executing `mvn package` command) in a `lib` directory in the Solr Home directory.
 This directory does not exist in the distribution, so you would need to create it for the first time. 
@@ -73,8 +76,6 @@ Turkish DeASCIIfier based on [Zemberek2](https://code.google.com/p/zemberek/).
 #### Zemberek3StemFilter(Factory)
 ___
 Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp).
-Please note that zemberek-* jars should be generated and deployed to local maven repository `mvn install` using [my fork](https://github.com/iorixxx/zemberek-nlp/).
-Here is the [difference](https://github.com/ahmetaa/zemberek-nlp/pull/46) over original repository.
 
 **JARs**: zemberek-morphology-0.9.2.jar zemberek-core-0.9.2.jar
 
@@ -109,7 +110,7 @@ This filter is intended to be used to allow *diacritics-insensitive search* for 
 I will post benchmark results of different field types (different stemmers) designed for different use-cases.
 
 ## Dependencies
-* JRE 1.7 or above
+* JRE 1.8 or above
 * Apache Maven 3.0.3 or above
 * Apache Lucene (Solr) 5.3.0
 
