@@ -4,7 +4,7 @@
 
     <groupId>org.apache.lucene</groupId>
     <artifactId>TurkishAnalysis</artifactId>
-    <version>5.3.0</version>
+    <version>5.5.0</version>
     <packaging>jar</packaging>
 
     <name>TurkishAnalysis</name>
@@ -77,8 +77,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
@@ -96,7 +96,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>1.7</version>
+                                    <version>1.8</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>

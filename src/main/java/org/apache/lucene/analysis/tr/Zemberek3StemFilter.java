@@ -29,14 +29,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Stemmer based on <a href="https://github.com/ahmetaa/zemberek-nlp">Zemberek3</a>
  */
 public final class Zemberek3StemFilter extends TokenFilter {
-
-    private static final StringLengthComparator STRING_LENGTH_COMPARATOR = new StringLengthComparator();
-    private static final MorphemeComparator MORPHEME_COMPARATOR = new MorphemeComparator();
 
     private final MorphParser parser;
     private final String aggregation;
@@ -50,51 +48,20 @@ public final class Zemberek3StemFilter extends TokenFilter {
         this.aggregation = aggregation;
     }
 
-    private static class StringLengthComparator implements Comparator<String> {
-        @Override
-        public int compare(String a, String b) {
-            return a.length() - b.length();
-        }
-
-    }
-
-    private static class MorphemeComparator implements Comparator<MorphParse> {
-        @Override
-        public int compare(MorphParse o1, MorphParse o2) {
-            if (o1 == null || o2 == null) return -1;
-            return o1.inflectionalGroups.size() - o2.inflectionalGroups.size();
-        }
-    }
-
-
     static List<MorphParse> selectMorphemes(List<MorphParse> parses, String strategy) {
 
         // if 0 or 1
         if (parses.size() < 2) return parses;
 
-        List<MorphParse> list;
-
         switch (strategy) {
             case "all":
                 return parses;
             case "maxMorpheme":
-                list = new ArrayList<>();
-                MorphParse maxMorphParse = Collections.max(parses, MORPHEME_COMPARATOR);
-                int maxMorphParseLength = maxMorphParse.inflectionalGroups.size();
-                for (MorphParse parse : parses)
-                    if (parse.inflectionalGroups.size() == maxMorphParseLength)
-                        list.add(parse);
-
-                return list;
+                final int max = parses.stream().map(morphParse -> morphParse.inflectionalGroups.size()).max(Comparator.naturalOrder()).get();
+                return parses.stream().filter(parse -> parse.inflectionalGroups.size() == max).collect(Collectors.toList());
             case "minMorpheme":
-                list = new ArrayList<>();
-                MorphParse minMorphParse = Collections.min(parses, MORPHEME_COMPARATOR);
-                int minMorphParseLength = minMorphParse.inflectionalGroups.size();
-                for (MorphParse parse : parses)
-                    if (parse.inflectionalGroups.size() == minMorphParseLength)
-                        list.add(parse);
-
-                return list;
+                final int min = parses.stream().map(morphParse -> morphParse.inflectionalGroups.size()).min(Comparator.naturalOrder()).get();
+                return parses.stream().filter(parse -> parse.inflectionalGroups.size() == min).collect(Collectors.toList());
             default:
                 throw new RuntimeException("unknown strategy " + strategy);
 
@@ -115,13 +82,9 @@ public final class Zemberek3StemFilter extends TokenFilter {
                     list.addAll(parse.getLemmas());
                 return list;
             case "lemma":
-                for (MorphParse parse : parses)
-                    list.add(parse.getLemma());
-                return list;
+                return parses.stream().map(MorphParse::getLemma).collect(Collectors.toList());
             case "root":
-                for (MorphParse parse : parses)
-                    list.add(parse.root);
-                return list;
+                return parses.stream().map(morphParse -> morphParse.root).collect(Collectors.toList());
             default:
                 throw new RuntimeException("unknown method name " + methodName);
         }
@@ -137,9 +100,9 @@ public final class Zemberek3StemFilter extends TokenFilter {
 
         switch (aggregation) {
             case "maxLength":
-                return Collections.max(candidates, STRING_LENGTH_COMPARATOR);
+                return Collections.max(candidates, Comparator.comparing(String::length));
             case "minLength":
-                return Collections.min(candidates, STRING_LENGTH_COMPARATOR);
+                return Collections.min(candidates, Comparator.comparing(String::length));
             default:
                 throw new RuntimeException("unknown strategy " + aggregation);
         }
