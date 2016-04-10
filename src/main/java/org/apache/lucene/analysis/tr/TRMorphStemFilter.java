@@ -38,7 +38,7 @@ import java.util.TreeSet;
  */
 public final class TRMorphStemFilter extends TokenFilter {
 
-    public static final Logger log = LoggerFactory.getLogger(TRMorphStemFilter.class);
+    private static final Logger log = LoggerFactory.getLogger(TRMorphStemFilter.class);
 
     private final CharTermAttribute termAttribute = addAttribute(CharTermAttribute.class);
     private final KeywordAttribute keywordAttribute = addAttribute(KeywordAttribute.class);
@@ -70,7 +70,7 @@ public final class TRMorphStemFilter extends TokenFilter {
         return true;
     }
 
-    String stem(String word) throws IOException {
+    private String stem(String word) throws IOException {
 
         List<String> parses = parse(word);
 

@@ -72,7 +72,7 @@ public class Zemberek2StemFilterFactory extends TokenFilterFactory implements Re
     /**
      * Stemmer based on <a href="https://code.google.com/p/zemberek">Zemberek2</a>
      */
-    public final class Zemberek2StemFilter extends TokenFilter {
+    private final class Zemberek2StemFilter extends TokenFilter {
 
         private final CharTermAttribute termAttribute = addAttribute(CharTermAttribute.class);
         private final KeywordAttribute keywordAttribute = addAttribute(KeywordAttribute.class);

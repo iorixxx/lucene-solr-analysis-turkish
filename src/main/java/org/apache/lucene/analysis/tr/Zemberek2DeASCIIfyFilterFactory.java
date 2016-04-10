@@ -99,7 +99,7 @@ public class Zemberek2DeASCIIfyFilterFactory extends TokenFilterFactory {
             return true;
         }
 
-        protected boolean createToken(String synonym, AttributeSource.State current) {
+        private boolean createToken(String synonym, AttributeSource.State current) {
             restoreState(current);
             termAttribute.setEmpty().append(synonym);
             typeAtt.setType(DEASCII_TOKEN_TYPE);
