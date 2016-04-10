@@ -48,7 +48,7 @@ public final class Zemberek3StemFilter extends TokenFilter {
         this.aggregation = aggregation;
     }
 
-    static List<MorphParse> selectMorphemes(List<MorphParse> parses, String strategy) {
+    private static List<MorphParse> selectMorphemes(List<MorphParse> parses, String strategy) {
 
         // if 0 or 1
         if (parses.size() < 2) return parses;
@@ -68,7 +68,7 @@ public final class Zemberek3StemFilter extends TokenFilter {
         }
     }
 
-    static List<String> morphToString(List<MorphParse> parses, String methodName) {
+    private static List<String> morphToString(List<MorphParse> parses, String methodName) {
 
         List<String> list = new ArrayList<>();
 

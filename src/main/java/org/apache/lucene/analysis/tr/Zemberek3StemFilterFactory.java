@@ -93,7 +93,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
         return new Zemberek3StemFilter(input, parser, strategy);
     }
 
-    public static void parse(String word, MorphParser parser) {
+    private static void parse(String word, MorphParser parser) {
 
         List<MorphParse> parses = parser.parse(word);
         System.out.println("Word = " + word + " has " + parses.size() + " many solutions");
