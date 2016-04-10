@@ -10,11 +10,8 @@ For example; *altın*, *alim*, *alın*, *altan*, and *alıntı* are all reduced 
 In other words, they are treated as if they were the same word even though they have completely different meanings.
 I will post some other harmful collisions here.
 
-Please note that zemberek-morphology-0.9.2.jar and zemberek-core-0.9.2.jar should be generated and deployed to your local maven repository by invoking `mvn install` command on the [master branch](https://github.com/ahmetaa/zemberek-nlp), which hasn't been released yet.
-We will be able to consume the JARs from maven repository after zemberek-nlp [0.9.2 release](https://github.com/ahmetaa/zemberek-nlp/issues/47).
-
 Currently we have five custom TokenFilters.
-To load the plugins, place specified JAR files (along with TurkishAnalysis-5.3.0.jar, which can be created by executing `mvn package` command) in a `lib` directory in the Solr Home directory.
+To load the plugins, place specified JAR files (along with TurkishAnalysis-5.5.0.jar, which can be created by executing `mvn package` command) in a `lib` directory in the Solr Home directory.
 This directory does not exist in the distribution, so you would need to create it for the first time. 
 The location for the `lib` directory is near the solr.xml file.
 
@@ -47,8 +44,7 @@ Turkish Stemmer based on [Zemberek2](https://code.google.com/p/zemberek/).
 
 **Arguments**:
   * `strategy`: Strategy to choose one of the multiple stem forms. Valid values are maxLength (the default), minLength, maxMorpheme, minMorpheme, frequency, or first.
-  * `dictionary`: Zemberek3's dictionary (*.dict) files, which can be download from [here](https://github.com/ahmetaa/zemberek-nlp/tree/master/morphology/src/main/resources/tr) and could be modified if required.
-
+  
 **Example**:
 ``` xml
 <analyzer>
@@ -112,7 +108,7 @@ I will post benchmark results of different field types (different stemmers) desi
 ## Dependencies
 * JRE 1.8 or above
 * Apache Maven 3.0.3 or above
-* Apache Lucene (Solr) 5.3.0
+* Apache Lucene (Solr) 5.5.0
 
 ## Author
 Please feel free to contact Ahmet Arslan at `iorixxx at yahoo dot com` if you have any questions, comments or contributions.
@@ -130,6 +126,6 @@ If you use this library for a research purpose, please use the following citatio
   pages = "326 - 339",
   year = "2016",
   doi = "http://dx.doi.org/10.1016/j.ipm.2015.08.004",
-  url = "http://www.sciencedirect.com/science/article/pii/S0306457315001053"  
+  url = "http://www.sciencedirect.com/science/article/pii/S0306457315001053"
 }
 ```
