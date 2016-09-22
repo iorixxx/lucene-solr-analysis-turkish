@@ -54,7 +54,7 @@ public class App {
             " * limitations under the License.\n" +
             " */\n" +
             "\n" +
-            "import org.apache.lucene.analysis.util.CharArrayMap;\n" +
+            "import org.apache.lucene.analysis.CharArrayMap;\n" +
             "\n" +
             "final class Map%c {\n" +
             "\n" +
