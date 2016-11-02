@@ -23,7 +23,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import org.apache.lucene.analysis.tr.util.PatternTableFactory;
-import org.apache.lucene.analysis.util.CharArrayMap;
+import org.apache.lucene.analysis.CharArrayMap;
 
 import java.io.IOException;
 import java.util.Arrays;
