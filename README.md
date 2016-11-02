@@ -11,7 +11,7 @@ In other words, they are treated as if they were the same word even though they 
 I will post some other harmful collisions here.
 
 Currently we have five custom TokenFilters.
-To load the plugins, place specified JAR files (along with TurkishAnalysis-5.5.0.jar, which can be created by executing `mvn package` command) in a `lib` directory in the Solr Home directory.
+To load the plugins, place specified JAR files (along with TurkishAnalysis-6.2.1.jar, which can be created by executing `mvn package` command) in a `lib` directory in the Solr Home directory.
 This directory does not exist in the distribution, so you would need to create it for the first time. 
 The location for the `lib` directory is near the solr.xml file.
 
@@ -108,7 +108,7 @@ I will post benchmark results of different field types (different stemmers) desi
 ## Dependencies
 * JRE 1.8 or above
 * Apache Maven 3.0.3 or above
-* Apache Lucene (Solr) 5.5.0
+* Apache Lucene (Solr) 6.2.1 or 
 
 ## Author
 Please feel free to contact Ahmet Arslan at `iorixxx at yahoo dot com` if you have any questions, comments or contributions.
