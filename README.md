@@ -15,21 +15,21 @@ To make the best out of this library quickly, without going much into details, p
 ##### TurkishAnalyzer for Solr Users
 If you are a Solr user, please use the following field type definition for Turkish.
 ``` xml
-    <!-- Turkish -->
-    <dynamicField name="*_txt_tr" type="text_tr"  indexed="true"  stored="true"/>
-    <fieldType name="text_tr" class="solr.TextField" positionIncrementGap="100">
-      <analyzer> 
-        <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.ApostropheFilterFactory"/>
-        <filter class="solr.TurkishLowerCaseFilterFactory"/>
-        <filter class="org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory"/>
-      </analyzer>
-    </fieldType>
+<!-- Turkish -->
+<dynamicField name="*_txt_tr" type="text_tr"  indexed="true"  stored="true"/>
+<fieldType name="text_tr" class="solr.TextField" positionIncrementGap="100">
+  <analyzer> 
+    <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.ApostropheFilterFactory"/>
+      <filter class="solr.TurkishLowerCaseFilterFactory"/>
+      <filter class="org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory"/>
+  </analyzer>
+</fieldType>
 ```
 
 ##### TurkishAnalyzer for Lucene Users
 If you are a Lucene user, please use the following custom analyzer declaration to create an analyzer for Turkish.
-``` java
+```java
   Analyzer analyzer = CustomAnalyzer.builder()
                 .withTokenizer("standard")
                 .addTokenFilter("apostrophe")
@@ -82,7 +82,7 @@ Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp).
 
   If you are happy with the standard dictionaries that shipped with Zemberek3, or you don't intent to alter them, you may prefer to use the no-args directive.
 ``` xml
-    <filter class="org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory"/>
+  <filter class="org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory"/>
 ```
 
 #### Zemberek2StemFilter(Factory)
