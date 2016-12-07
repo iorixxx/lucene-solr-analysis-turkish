@@ -59,7 +59,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
 
     public Zemberek3StemFilterFactory(Map<String, String> args) {
         super(args);
-        dictionaryFiles = require(args, "dictionary");
+        dictionaryFiles = get(args, "dictionary");
         strategy = get(args, "strategy", "maxLength");
 
         if (!args.isEmpty()) {
@@ -70,15 +70,25 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
     @Override
     public void inform(ResourceLoader loader) throws IOException {
 
+        if (dictionaryFiles == null || dictionaryFiles.trim().isEmpty()) {
+            this.parser = TurkishWordParserGenerator.createWithDefaults().getParser();
+            // Use default dictionaries shipped with Zemberek3.
+            return;
+        }
         List<String> lines = new ArrayList<>();
-        if (dictionaryFiles != null) {
-            List<String> files = splitFileNames(dictionaryFiles);
-            if (files.size() > 0) {
-                for (String file : files) {
-                    List<String> wlist = getLines(loader, file.trim());
-                    lines.addAll(wlist);
-                }
+
+        List<String> files = splitFileNames(dictionaryFiles);
+        if (files.size() > 0) {
+            for (String file : files) {
+                List<String> wlist = getLines(loader, file.trim());
+                lines.addAll(wlist);
             }
+        }
+
+        if (lines.isEmpty()) {
+            this.parser = TurkishWordParserGenerator.createWithDefaults().getParser();
+            // Use default dictionaries shipped with Zemberek3.
+            return;
         }
 
         SuffixProvider suffixProvider = new TurkishSuffixes();
