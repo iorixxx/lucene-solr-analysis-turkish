@@ -38,8 +38,27 @@ If you are a Lucene user, please use the following custom analyzer declaration t
                 .build();
 ```
 
+##### How to obtain necessary JAR files?
+To obtain the JAR files required to active Turkish Analysis plugin, please use the following shell script.
+```sh
+#!/bin/bash
+#
+# Clones the repository and copies required jar files to a lib directory
+#
+# Requires git, maven, java installed on your computer.
+#
+
+git clone https://github.com/iorixxx/lucene-solr-analysis-turkish.git
+cd lucene-solr-analysis-turkish
+mkdir -p lib
+mvn clean package
+cp ~/.m2/repository/zemberek-nlp/morphology/0.9.2/morphology-0.9.2.jar lib
+cp ~/.m2/repository/zemberek-nlp/core/0.9.2/core-0.9.2.jar lib
+cp target/TurkishAnalysis-*.jar lib
+```
+
 Currently we have five custom TokenFilters.
-To load the plugins, place specified JAR files (along with TurkishAnalysis-6.2.1.jar, which can be created by executing `mvn package` command) in a `lib` directory in the Solr Home directory.
+To load the plugins, place specified JAR files (along with TurkishAnalysis-*.jar, which can be created by executing `mvn package` command) in a `lib` directory in the Solr Home directory.
 This directory does not exist in the distribution, so you would need to create it for the first time. 
 The location for the `lib` directory is near the solr.xml file.
 #### TurkishDeASCIIfyFilter(Factory)
