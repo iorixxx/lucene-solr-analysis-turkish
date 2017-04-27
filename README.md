@@ -1,5 +1,6 @@
 ## Turkish analysis components for Apache Lucene/Solr
 [![Build Status](https://travis-ci.org/iorixxx/lucene-solr-analysis-turkish.svg?branch=master)](https://travis-ci.org/iorixxx/lucene-solr-analysis-turkish)
+
 The use of *Open Source Software* is gaining increasing momentum in Turkey.
 Turkish users on Apache Lucene/Solr (and other [Apache Projects](https://projects.apache.org/projects.html)) mailing lists are increasing.
 This project makes use of publicly available Turkish NLP tools to create [Apache Lucene/Solr plugins](https://cwiki.apache.org/confluence/display/solr/Solr+Plugins) from them.
