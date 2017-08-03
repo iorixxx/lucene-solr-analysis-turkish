@@ -22,15 +22,8 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.util.ResourceLoader;
 import org.apache.lucene.analysis.util.ResourceLoaderAware;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
-import zemberek.morphology.lexicon.RootLexicon;
-import zemberek.morphology.lexicon.SuffixProvider;
-import zemberek.morphology.lexicon.graph.DynamicLexiconGraph;
-import zemberek.morphology.lexicon.tr.TurkishDictionaryLoader;
-import zemberek.morphology.lexicon.tr.TurkishSuffixes;
-import zemberek.morphology.parser.MorphParse;
-import zemberek.morphology.parser.MorphParser;
-import zemberek.morphology.parser.WordParser;
-import zemberek.morphology.parser.tr.TurkishWordParserGenerator;
+import zemberek.morphology.analysis.WordAnalysis;
+import zemberek.morphology.analysis.tr.TurkishMorphology;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,7 +45,7 @@ import java.util.Map;
  */
 public class Zemberek3StemFilterFactory extends TokenFilterFactory implements ResourceLoaderAware {
 
-    private MorphParser parser;
+    private TurkishMorphology morphology;
 
     private final String strategy;
     private final String dictionaryFiles;
@@ -71,7 +64,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
     public void inform(ResourceLoader loader) throws IOException {
 
         if (dictionaryFiles == null || dictionaryFiles.trim().isEmpty()) {
-            this.parser = TurkishWordParserGenerator.createWithDefaults().getParser();
+            this.morphology = TurkishMorphology.createWithDefaults();
             // Use default dictionaries shipped with Zemberek3.
             return;
         }
@@ -86,50 +79,51 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
         }
 
         if (lines.isEmpty()) {
-            this.parser = TurkishWordParserGenerator.createWithDefaults().getParser();
+            this.morphology = TurkishMorphology.createWithDefaults();
             // Use default dictionaries shipped with Zemberek3.
             return;
         }
 
-        SuffixProvider suffixProvider = new TurkishSuffixes();
-        RootLexicon lexicon = new TurkishDictionaryLoader(suffixProvider).load(lines);
-        DynamicLexiconGraph graph = new DynamicLexiconGraph(suffixProvider);
-        graph.addDictionaryItems(lexicon);
-        parser = new WordParser(graph);
+
+        String[] linesArray = new String[lines.size()];
+        linesArray = lines.toArray(linesArray);
+        morphology = (new TurkishMorphology.Builder()).addDictionaryLines(linesArray).build();
+
+
     }
 
     @Override
     public TokenStream create(TokenStream input) {
-        return new Zemberek3StemFilter(input, parser, strategy);
+        return new Zemberek3StemFilter(input, morphology, strategy);
     }
 
-    private static void parse(String word, MorphParser parser) {
+    private static void parse(String word, TurkishMorphology morphology) {
 
-        List<MorphParse> parses = parser.parse(word);
-        System.out.println("Word = " + word + " has " + parses.size() + " many solutions");
+        List<WordAnalysis> results = morphology.analyze(word);
+        System.out.println("Word = " + word + " has " + results.size() + " many solutions");
 
-        if (parses.size() == 0) return;
+        if (results.size() == 0) return;
 
         System.out.println("Parses: ");
 
-        for (MorphParse parse : parses) {
-            System.out.println("number of morphemes = " + parse.inflectionalGroups.size());
-            System.out.println(parse.formatLong());
-            System.out.println("\tStems = " + parse.getStems());
-            System.out.println("\tLemmas = " + parse.getLemmas());
-            System.out.println("\tLemma = " + parse.getLemma());
-            System.out.println("\tRoot = " + parse.root);
-            System.out.println("\tRoot = " + parse.dictionaryItem.root);
+        for (WordAnalysis result : results) {
+            System.out.println("number of morphemes = " + result.inflectionalGroups.size());
+            System.out.println(result.formatLong());
+            System.out.println("\tStems = " + result.getStems());
+            System.out.println("\tLemmas = " + result.getLemmas());
+            System.out.println("\tLemma = " + result.getLemma());
+            System.out.println("\tRoot = " + result.root);
+            System.out.println("\tRoot = " + result.dictionaryItem.root);
             System.out.println("-------------------");
         }
 
-        System.out.println("final selected stem : " + Zemberek3StemFilter.stem(parses, "maxLength"));
+        System.out.println("final selected stem : " + Zemberek3StemFilter.stem(results, "maxLength"));
         System.out.println("==================================");
     }
 
     public static void main(String[] args) throws IOException {
 
-        TurkishWordParserGenerator parser = TurkishWordParserGenerator.createWithDefaults();
+        TurkishMorphology morphology = TurkishMorphology.createWithDefaults();
 
 
         String a = "kuş asisi ortaklar çekişme masalı İCARETİN DE ARTMASI BEKLENİYOR\n" +
@@ -138,7 +132,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
         a = a.toLowerCase(Locale.forLanguageTag("tr"));
 
         for (String s : a.split("\\s+")) {
-            parse(s, parser.getParser());
+            parse(s, morphology);
         }
 
     }

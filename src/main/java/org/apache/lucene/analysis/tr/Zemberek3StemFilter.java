@@ -21,8 +21,8 @@ import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.KeywordAttribute;
-import zemberek.morphology.parser.MorphParse;
-import zemberek.morphology.parser.MorphParser;
+import zemberek.morphology.analysis.WordAnalysis;
+import zemberek.morphology.analysis.tr.TurkishMorphology;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,55 +36,55 @@ import java.util.stream.Collectors;
  */
 public final class Zemberek3StemFilter extends TokenFilter {
 
-    private final MorphParser parser;
+    private final TurkishMorphology morphology;
     private final String aggregation;
 
     private final CharTermAttribute termAttribute = addAttribute(CharTermAttribute.class);
     private final KeywordAttribute keywordAttribute = addAttribute(KeywordAttribute.class);
 
-    public Zemberek3StemFilter(TokenStream input, MorphParser parser, String aggregation) {
+    public Zemberek3StemFilter(TokenStream input, TurkishMorphology morphology, String aggregation) {
         super(input);
-        this.parser = parser;
+        this.morphology = morphology;
         this.aggregation = aggregation;
     }
 
-    private static List<MorphParse> selectMorphemes(List<MorphParse> parses, String strategy) {
+    private static List<WordAnalysis> selectMorphemes(List<WordAnalysis> results, String strategy) {
 
         // if 0 or 1
-        if (parses.size() < 2) return parses;
+        if (results.size() < 2) return results;
 
         switch (strategy) {
             case "all":
-                return parses;
+                return results;
             case "maxMorpheme":
-                final int max = parses.stream().map(morphParse -> morphParse.inflectionalGroups.size()).max(Comparator.naturalOrder()).get();
-                return parses.stream().filter(parse -> parse.inflectionalGroups.size() == max).collect(Collectors.toList());
+                final int max = results.stream().map(morphParse -> morphParse.inflectionalGroups.size()).max(Comparator.naturalOrder()).get();
+                return results.stream().filter(parse -> parse.inflectionalGroups.size() == max).collect(Collectors.toList());
             case "minMorpheme":
-                final int min = parses.stream().map(morphParse -> morphParse.inflectionalGroups.size()).min(Comparator.naturalOrder()).get();
-                return parses.stream().filter(parse -> parse.inflectionalGroups.size() == min).collect(Collectors.toList());
+                final int min = results.stream().map(morphParse -> morphParse.inflectionalGroups.size()).min(Comparator.naturalOrder()).get();
+                return results.stream().filter(parse -> parse.inflectionalGroups.size() == min).collect(Collectors.toList());
             default:
                 throw new RuntimeException("unknown strategy " + strategy);
 
         }
     }
 
-    private static List<String> morphToString(List<MorphParse> parses, String methodName) {
+    private static List<String> morphToString(List<WordAnalysis> results, String methodName) {
 
         List<String> list = new ArrayList<>();
 
         switch (methodName) {
             case "stems":
-                for (MorphParse parse : parses)
-                    list.addAll(parse.getStems());
+                for (WordAnalysis result : results)
+                    list.addAll(result.getStems());
                 return list;
             case "lemmas":
-                for (MorphParse parse : parses)
-                    list.addAll(parse.getLemmas());
+                for (WordAnalysis result : results)
+                    list.addAll(result.getLemmas());
                 return list;
             case "lemma":
-                return parses.stream().map(MorphParse::getLemma).collect(Collectors.toList());
+                return results.stream().map(WordAnalysis::getLemma).collect(Collectors.toList());
             case "root":
-                return parses.stream().map(morphParse -> morphParse.root).collect(Collectors.toList());
+                return results.stream().map(morphParse -> morphParse.root).collect(Collectors.toList());
             default:
                 throw new RuntimeException("unknown method name " + methodName);
         }
@@ -92,9 +92,9 @@ public final class Zemberek3StemFilter extends TokenFilter {
 
     }
 
-    static String stem(List<MorphParse> parses, String aggregation) {
+    static String stem(List<WordAnalysis> results, String aggregation) {
 
-        List<MorphParse> alternatives = selectMorphemes(parses, "minMorpheme");
+        List<WordAnalysis> alternatives = selectMorphemes(results, "minMorpheme");
 
         List<String> candidates = morphToString(alternatives, "lemmas");
 
@@ -117,14 +117,14 @@ public final class Zemberek3StemFilter extends TokenFilter {
         /**
          *  copied from {@link org.apache.lucene.analysis.br.BrazilianStemFilter#incrementToken}
          */
-        final String term = termAttribute.toString();
+        final String word = termAttribute.toString();
 
-        final List<MorphParse> parses = parser.parse(term);
+        final List<WordAnalysis> parses = morphology.analyze(word);
         if (parses.size() == 0) return true;
 
         final String s = stem(parses, aggregation);
         // If not stemmed, don't waste the time adjusting the token.
-        if ((s != null) && !s.equals(term))
+        if ((s != null) && !s.equals(word))
             termAttribute.setEmpty().append(s);
 
         return true;
