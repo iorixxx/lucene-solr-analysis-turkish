@@ -137,6 +137,19 @@
                 </configuration>
             </plugin>
 
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <includeScope>compile</includeScope>
+                    <includeGroupIds>zemberek-nlp,com.google.guava</includeGroupIds>
+                    <includeArtifactIds>core,morphology,guava</includeArtifactIds>
+                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 

@@ -40,23 +40,10 @@ If you are a Lucene user, please use the following custom analyzer declaration t
 ```
 
 ##### How to obtain necessary JAR files?
-To obtain the JAR files required to active Turkish Analysis plugin, please use the following shell script.
-```sh
-#!/bin/bash
-#
-# Clones the repository and copies required jar files to a lib directory
-#
-# Requires git, maven, java installed on your computer.
-#
+To obtain the JAR files required to active Turkish Analysis plugin, please use the `mvn clean package dependency:copy-dependencies` maven command.
+It copies required jar files to the target/lib directory. Plus you need to manually copy target/TurkishAnalysis-*.jar to the lib directory.
 
-git clone https://github.com/iorixxx/lucene-solr-analysis-turkish.git
-cd lucene-solr-analysis-turkish
-mkdir -p lib
-mvn clean package
-cp ~/.m2/repository/zemberek-nlp/morphology/0.9.2/morphology-0.9.2.jar lib
-cp ~/.m2/repository/zemberek-nlp/core/0.9.2/core-0.9.2.jar lib
-cp target/TurkishAnalysis-*.jar lib
-```
+
 
 Currently we have five custom TokenFilters.
 To load the plugins, place specified JAR files (along with TurkishAnalysis-*.jar, which can be created by executing `mvn package` command) in a `lib` directory in the Solr Home directory.
@@ -82,7 +69,7 @@ This filter is intended to be used to allow *diacritics-insensitive search* for 
 ___
 Turkish Stemmer based on [Zemberek3](https://github.com/ahmetaa/zemberek-nlp).
 
-**JARs**: zemberek-morphology-0.9.2.jar zemberek-core-0.9.2.jar
+**JARs**: zemberek-morphology-0.11.1.jar zemberek-core-0.11.1.jar
 
 **Arguments**:
   * `strategy`: Strategy to choose one of the multiple stem forms by selecting either longest or shortest stem. Valid values are maxLength (the default) or minLength.
