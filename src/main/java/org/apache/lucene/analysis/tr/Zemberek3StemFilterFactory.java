@@ -112,8 +112,9 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
             System.out.println("\tStems = " + result.getStems());
             System.out.println("\tLemmas = " + result.getLemmas());
             System.out.println("\tLemma = " + result.getLemma());
-            System.out.println("\tRoot = " + result.root);
+            System.out.println("\tRoot = " + result.getRoot());
             System.out.println("\tRoot = " + result.dictionaryItem.root);
+            System.out.println("\tStemAndEnding = " + result.getStemAndEnding());
             System.out.println("-------------------");
         }
 
@@ -127,7 +128,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
 
 
         String a = "kuş asisi ortaklar çekişme masalı İCARETİN DE ARTMASI BEKLENİYOR\n" +
-                "Savinykh, Ege Bölgesi Sanayi Odası'nda (EBSO) düzenlenen \"Belarus Türkiye Yatırım ve İşbirliği Olanakları Semineri\"nde yaptığı konuşmada, \" 2 Haziran'dan itibaren Türk halkı vizesiz olarak Belarus'a gidip gelebilecek. İki ülke arasındaki ticaret bu anlaşma ile daha da artacak\" dedi. Türkiye ile Belarus arasında ticari, kültürel ve sosyal ilişkilerin gelişmesini arzu ettiklerini kaydeden Andrei Savinykh, ülkesinin Kırgızistan ve Kazakistan ile Gümrük Birliği anlaşması bulunduğunu, önümüzdeki ";
+                "Savinykh, Ege Bölgesi Sanayi Odası'nda (EBSO) düzenlenen \"Belarus Türkiye Yatırım ve İşbirliği Olanakları Semineri\"nde yaptığı konuşmada, \" 2 Haziran'dan itibaren Türk halkı vizesiz olarak Belarus'a gidip gelebilecek. İki ülke arasındaki ticaret bu anlaşma ile daha da artacak\" dedi. Türkiye ile Belarus arasında ticari, kültürel ve sosyal ilişkilerin gelişmesini arzu ettiklerini kaydeden Andrei Savinykh, ülkesinin Kırgızistan ve Kazakistan ile Gümrük Birliği anlaşması bulunduğunu, önümüzdeki kuku birliğ";
 
         a = a.toLowerCase(Locale.forLanguageTag("tr"));
 

@@ -78,13 +78,17 @@ public final class Zemberek3StemFilter extends TokenFilter {
                     list.addAll(result.getStems());
                 return list;
             case "lemmas":
-                for (WordAnalysis result : results)
-                    list.addAll(result.getLemmas());
+                for (WordAnalysis result : results) {
+                    if (result.isUnknown())
+                        list.addAll(result.getStems());
+                    else
+                        list.addAll(result.getLemmas());
+                }
                 return list;
             case "lemma":
                 return results.stream().map(WordAnalysis::getLemma).collect(Collectors.toList());
             case "root":
-                return results.stream().map(morphParse -> morphParse.root).collect(Collectors.toList());
+                return results.stream().map(WordAnalysis::getRoot).collect(Collectors.toList());
             default:
                 throw new RuntimeException("unknown method name " + methodName);
         }
