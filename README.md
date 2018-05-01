@@ -11,6 +11,16 @@ For example; *altın*, *alim*, *alın*, *altan*, and *alıntı* are all reduced 
 In other words, they are treated as if they were the same word even though they have completely different meanings.
 I will post some other harmful collisions here.
 
+#### How to enable this plugin? Quick way :new: :purple_heart:
+If you do not want to build this library and patch solr: To avoid all the hassle, just download my solr-7.3.0.tgz build from [https://www.dropbox.com/s/yygdvwoe4cc7d46/solr-7.3.0.tgz](https://www.dropbox.com/s/yygdvwoe4cc7d46/solr-7.3.0.tgz)
+It is a link to my Dropbox account. The plugin is enabled in this distribution. All you need to download it and run `bin/solr -start`
+It has a core named `zemberek` activated by default. Just go to the admin/analysis page and select `text_tr` type and enter some Turkish text.
+You you press the analyze button, you would see Zemberek stem filter working nicely.
+
+If you are a Docker user, please use [Dockerfile](https://github.com/docker-solr/docker-solr/blob/78b52ecefa3441518561bdd504a2ac8b53755540/7.3/Dockerfile) and override the solr download location with e.g.:
+`docker build -t mine --build-arg SOLR_DOWNLOAD_SERVER=https://www.dropbox.com/s/yygdvwoe4cc7d46/solr-7.3.0.tgz .`
+
+
 To make the best out of this library quickly, without going much into details, please do either:
 
 ##### TurkishAnalyzer for Solr Users
