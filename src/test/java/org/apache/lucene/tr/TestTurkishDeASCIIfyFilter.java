@@ -20,24 +20,28 @@ package org.apache.lucene.tr;
 import org.apache.lucene.analysis.BaseTokenStreamTestCase;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tr.TurkishDeASCIIfyFilter;
+import org.junit.Test;
 
 /**
  * Simple tests to ensure Turkish deASCIIfy filter factory is working.
  */
 public class TestTurkishDeASCIIfyFilter extends BaseTokenStreamTestCase {
 
+    @Test
     public void testDeAscii2() throws Exception {
         TokenStream stream = whitespaceMockTokenizer("tatlises akgunduz sakip cernobil baslattigi dayanikliklarini");
         stream = new TurkishDeASCIIfyFilter(stream, false);
         assertTokenStreamContents(stream, new String[]{"tatlıses", "akgündüz", "sakıp", "çernobil", "başlattığı", "dayanıklıklarını"});
     }
 
+    @Test
     public void testDeAscii() throws Exception {
         TokenStream stream = whitespaceMockTokenizer("kus fadil akgunduz dogalgaz ahmet");
         stream = new TurkishDeASCIIfyFilter(stream, false);
         assertTokenStreamContents(stream, new String[]{"kuş", "fadıl", "akgündüz", "doğalgaz", "ahmet"});
     }
 
+    @Test
     public void testPreserveOriginal() throws Exception {
         TokenStream stream = whitespaceMockTokenizer("kus fadil akgunduz dogalgaz ahmet izmir");
         stream = new TurkishDeASCIIfyFilter(stream, true);

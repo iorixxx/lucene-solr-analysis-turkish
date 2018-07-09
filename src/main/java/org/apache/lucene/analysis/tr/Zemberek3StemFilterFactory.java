@@ -22,8 +22,9 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.util.ResourceLoader;
 import org.apache.lucene.analysis.util.ResourceLoaderAware;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
+import zemberek.morphology.analysis.SingleAnalysis;
 import zemberek.morphology.analysis.WordAnalysis;
-import zemberek.morphology.analysis.tr.TurkishMorphology;
+import zemberek.morphology.TurkishMorphology;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -99,21 +100,18 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
 
     private static void parse(String word, TurkishMorphology morphology) {
 
-        List<WordAnalysis> results = morphology.analyze(word);
-        System.out.println("Word = " + word + " has " + results.size() + " many solutions");
+        WordAnalysis results = morphology.analyze(word);
+        System.out.println("Word = " + word + " has " + results.analysisCount() + " many solutions");
 
-        if (results.size() == 0) return;
+        if (results.analysisCount() == 0) return;
 
         System.out.println("Parses: ");
 
-        for (WordAnalysis result : results) {
-            System.out.println("number of morphemes = " + result.inflectionalGroups.size());
+        for (SingleAnalysis result : results) {
+            System.out.println("number of morphemes = " + result.getMorphemeDataList().size()) ;
             System.out.println(result.formatLong());
             System.out.println("\tStems = " + result.getStems());
             System.out.println("\tLemmas = " + result.getLemmas());
-            System.out.println("\tLemma = " + result.getLemma());
-            System.out.println("\tRoot = " + result.getRoot());
-            System.out.println("\tRoot = " + result.dictionaryItem.root);
             System.out.println("\tStemAndEnding = " + result.getStemAndEnding());
             System.out.println("-------------------");
         }
