@@ -88,7 +88,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
 
         String[] linesArray = new String[lines.size()];
         linesArray = lines.toArray(linesArray);
-        morphology = (new TurkishMorphology.Builder()).addDictionaryLines(linesArray).build();
+        morphology = (new TurkishMorphology.Builder()).setLexicon(linesArray).build();
 
 
     }

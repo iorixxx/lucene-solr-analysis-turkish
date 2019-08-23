@@ -23,7 +23,7 @@ public class TestZemberek3StemFilter extends BaseTokenStreamTestCase {
     public void testSomeWords() throws Exception {
         TokenStream stream = whitespaceMockTokenizer("kuş gribi aşısı ortaklar çekişme masalı TİCARETİN DE ARTMASI BEKLENİYOR");
         stream = new Zemberek3StemFilter(stream, morphology, "maxLength");
-        assertTokenStreamContents(stream, new String[]{"kuş", "grip", "aşı", "ortaklar", "çekişme", "masal", "ticaret", "de", "artma", "beklen"});
+        assertTokenStreamContents(stream, new String[]{"kuş", "grip", "aşı", "ortak", "çekişme", "masal", "ticaret", "de", "artma", "beklen"});
     }
 
     @Test

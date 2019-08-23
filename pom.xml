@@ -4,7 +4,7 @@
 
     <groupId>org.apache.lucene</groupId>
     <artifactId>TurkishAnalysis</artifactId>
-    <version>7.4.0</version>
+    <version>8.2.0</version>
     <packaging>jar</packaging>
 
     <name>TurkishAnalysis</name>
@@ -159,13 +159,13 @@
         <dependency>
             <groupId>zemberek-nlp</groupId>
             <artifactId>zemberek-core</artifactId>
-            <version>0.14.0</version>
+            <version>0.17.1</version>
         </dependency>
 
         <dependency>
             <groupId>zemberek-nlp</groupId>
             <artifactId>zemberek-morphology</artifactId>
-            <version>0.14.0</version>
+            <version>0.17.1</version>
         </dependency>
 
         <dependency>
