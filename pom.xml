@@ -70,15 +70,7 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo
-                    </altDeploymentRepository>
-                </configuration>
-            </plugin>
+
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -146,7 +138,7 @@
                 <configuration>
                     <includeScope>compile</includeScope>
                     <includeGroupIds>zemberek-nlp,com.google.guava</includeGroupIds>
-                    <includeArtifactIds>core,morphology,guava</includeArtifactIds>
+                    <includeArtifactIds>zemberek-core,zemberek-morphology,guava</includeArtifactIds>
                     <outputDirectory>${project.build.directory}/lib</outputDirectory>
                 </configuration>
             </plugin>
