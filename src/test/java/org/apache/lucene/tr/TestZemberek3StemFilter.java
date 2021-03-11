@@ -5,6 +5,7 @@ import org.apache.lucene.analysis.BaseTokenStreamTestCase;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tr.TurkishLowerCaseFilter;
 import org.apache.lucene.analysis.tr.Zemberek3StemFilter;
 import org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory;
 import org.junit.AfterClass;
@@ -49,11 +50,12 @@ public class TestZemberek3StemFilter extends BaseTokenStreamTestCase {
                 .addTokenFilter(Zemberek3StemFilterFactory.class)
                 .build();
 
-        System.out.println(getAnalyzedTokens("4S.P", analyzer));
+        System.out.println(getAnalyzedTokens("4g.x", analyzer));
 
         TokenStream stream = whitespaceMockTokenizer("4S.P");
+        stream = new TurkishLowerCaseFilter(stream);
         stream = new Zemberek3StemFilter(stream, morphology, "maxLength");
-        assertTokenStreamContents(stream, new String[]{"4S.P"});
+        assertTokenStreamContents(stream, new String[]{"4s.p"});
     }
 
     @AfterClass
