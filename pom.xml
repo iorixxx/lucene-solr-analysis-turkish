@@ -152,14 +152,6 @@
 
         <dependency>
             <groupId>zemberek-nlp</groupId>
-            <artifactId>zemberek-core</artifactId>
-            <version>0.17.1</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>zemberek-nlp</groupId>
             <artifactId>zemberek-morphology</artifactId>
             <version>0.17.1</version>
             <type>jar</type>
