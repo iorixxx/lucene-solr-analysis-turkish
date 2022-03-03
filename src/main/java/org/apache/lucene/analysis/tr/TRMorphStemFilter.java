@@ -140,6 +140,3 @@ public final class TRMorphStemFilter extends TokenFilter {
 
     }
 }
-
-
-

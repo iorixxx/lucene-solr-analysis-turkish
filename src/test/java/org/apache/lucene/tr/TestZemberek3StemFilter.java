@@ -5,13 +5,11 @@ import org.apache.lucene.analysis.BaseTokenStreamTestCase;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tr.MyTurkishMorphology;
 import org.apache.lucene.analysis.tr.TurkishLowerCaseFilter;
 import org.apache.lucene.analysis.tr.Zemberek3StemFilter;
 import org.apache.lucene.analysis.tr.Zemberek3StemFilterFactory;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import zemberek.morphology.TurkishMorphology;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -20,12 +18,7 @@ import java.util.List;
 
 public class TestZemberek3StemFilter extends BaseTokenStreamTestCase {
 
-    private static TurkishMorphology morphology;
-
-    @BeforeClass
-    private static void initialize() throws IOException {
-        morphology = TurkishMorphology.createWithDefaults();
-    }
+    private static final MyTurkishMorphology morphology = MyTurkishMorphology.createWithDefaults();
 
     @Test
     public void testSomeWords() throws Exception {
@@ -51,6 +44,14 @@ public class TestZemberek3StemFilter extends BaseTokenStreamTestCase {
                 .build();
 
         System.out.println(getAnalyzedTokens("4g.x", analyzer));
+        System.out.println(getAnalyzedTokens("0.25", analyzer));
+        System.out.println(getAnalyzedTokens(".", analyzer));
+        System.out.println(getAnalyzedTokens("bulun.duğunu", analyzer));
+        assertTrue(getAnalyzedTokens(".", analyzer).isEmpty());
+
+        identity("4g.x");
+        identity("0.25");
+        identity(".");
 
         TokenStream stream = whitespaceMockTokenizer("4S.P");
         stream = new TurkishLowerCaseFilter(stream);
@@ -58,10 +59,11 @@ public class TestZemberek3StemFilter extends BaseTokenStreamTestCase {
         assertTokenStreamContents(stream, new String[]{"4s.p"});
     }
 
-    @AfterClass
-    private static void clean() {
-        morphology.invalidateCache();
-        morphology = null;
+    private void identity(String word) throws Exception {
+        TokenStream stream = whitespaceMockTokenizer(word);
+        stream = new TurkishLowerCaseFilter(stream);
+        stream = new Zemberek3StemFilter(stream, morphology, "maxLength");
+        assertTokenStreamContents(stream, new String[]{word});
     }
 
     /**

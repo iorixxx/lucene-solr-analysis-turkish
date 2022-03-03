@@ -24,7 +24,7 @@ import org.apache.lucene.analysis.util.ResourceLoaderAware;
 import org.apache.lucene.analysis.util.TokenFilterFactory;
 import zemberek.morphology.analysis.SingleAnalysis;
 import zemberek.morphology.analysis.WordAnalysis;
-import zemberek.morphology.TurkishMorphology;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ import java.util.Map;
  */
 public class Zemberek3StemFilterFactory extends TokenFilterFactory implements ResourceLoaderAware {
 
-    private TurkishMorphology morphology;
+    private MyTurkishMorphology morphology;
 
     private final String strategy;
     private final String dictionaryFiles;
@@ -65,7 +65,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
     public void inform(ResourceLoader loader) throws IOException {
 
         if (dictionaryFiles == null || dictionaryFiles.trim().isEmpty()) {
-            this.morphology = TurkishMorphology.createWithDefaults();
+            this.morphology = MyTurkishMorphology.createWithDefaults();
             // Use default dictionaries shipped with Zemberek3.
             return;
         }
@@ -80,7 +80,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
         }
 
         if (lines.isEmpty()) {
-            this.morphology = TurkishMorphology.createWithDefaults();
+            this.morphology = MyTurkishMorphology.createWithDefaults();
             // Use default dictionaries shipped with Zemberek3.
             return;
         }
@@ -88,7 +88,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
 
         String[] linesArray = new String[lines.size()];
         linesArray = lines.toArray(linesArray);
-        morphology = (new TurkishMorphology.Builder()).setLexicon(linesArray).build();
+        morphology = (new MyTurkishMorphology.Builder()).setLexicon(linesArray).build();
 
 
     }
@@ -98,7 +98,7 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
         return new Zemberek3StemFilter(input, morphology, strategy);
     }
 
-    private static void parse(String word, TurkishMorphology morphology) {
+    private static void parse(String word, MyTurkishMorphology morphology) {
 
         WordAnalysis results = morphology.analyze(word);
         System.out.println("Word = " + word + " has " + results.analysisCount() + " many solutions");
@@ -122,10 +122,10 @@ public class Zemberek3StemFilterFactory extends TokenFilterFactory implements Re
 
     public static void main(String[] args) throws IOException {
 
-        TurkishMorphology morphology = TurkishMorphology.createWithDefaults();
+        MyTurkishMorphology morphology = MyTurkishMorphology.createWithDefaults();
 
 
-        String a = "kuş asisi ortaklar çekişme masalı İCARETİN DE ARTMASI BEKLENİYOR\n" +
+        String a = "0.25 4p.05 4p.x kuş asisi ortaklar çekişme masalı İCARETİN DE ARTMASI BEKLENİYOR\n" +
                 "Savinykh, Ege Bölgesi Sanayi Odası'nda (EBSO) düzenlenen \"Belarus Türkiye Yatırım ve İşbirliği Olanakları Semineri\"nde yaptığı konuşmada, \" 2 Haziran'dan itibaren Türk halkı vizesiz olarak Belarus'a gidip gelebilecek. İki ülke arasındaki ticaret bu anlaşma ile daha da artacak\" dedi. Türkiye ile Belarus arasında ticari, kültürel ve sosyal ilişkilerin gelişmesini arzu ettiklerini kaydeden Andrei Savinykh, ülkesinin Kırgızistan ve Kazakistan ile Gümrük Birliği anlaşması bulunduğunu, önümüzdeki kuku birliğ";
 
         a = a.toLowerCase(Locale.forLanguageTag("tr"));

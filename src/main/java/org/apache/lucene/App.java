@@ -123,7 +123,7 @@ public class App {
             output.print("            ");
 
             int indent = 0;
-            for (Map.Entry entry : hashMap.entrySet()) {
+            for (Map.Entry<String, Integer> entry : hashMap.entrySet()) {
                 output.print("put(" + entry.getKey() + ", " + entry.getValue() + ");");
                 if (++indent % 3 == 0) {
                     output.println();

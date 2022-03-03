@@ -21,15 +21,12 @@ import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.KeywordAttribute;
-import zemberek.morphology.TurkishMorphology;
+import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import zemberek.morphology.analysis.SingleAnalysis;
 import zemberek.morphology.analysis.WordAnalysis;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -37,13 +34,15 @@ import java.util.stream.Collectors;
  */
 public final class Zemberek3StemFilter extends TokenFilter {
 
-    private final TurkishMorphology morphology;
+    private static final HashSet<String> skipTypes = new HashSet<>(Arrays.asList("<NUM>", "<SOUTHEAST_ASIAN>", "<IDEOGRAPHIC>", "<HIRAGANA>", "<KATAKANA>", "<HANGUL>", "<EMOJI>"));
+    private final MyTurkishMorphology morphology;
     private final String aggregation;
 
     private final CharTermAttribute termAttribute = addAttribute(CharTermAttribute.class);
     private final KeywordAttribute keywordAttribute = addAttribute(KeywordAttribute.class);
+    private final TypeAttribute typeAtt = this.addAttribute(TypeAttribute.class);
 
-    public Zemberek3StemFilter(TokenStream input, TurkishMorphology morphology, String aggregation) {
+    public Zemberek3StemFilter(TokenStream input, MyTurkishMorphology morphology, String aggregation) {
         super(input);
         this.morphology = morphology;
         this.aggregation = aggregation;
@@ -80,9 +79,10 @@ public final class Zemberek3StemFilter extends TokenFilter {
                 return list;
             case "lemmas":
                 for (SingleAnalysis result : results) {
-                    if (result.isUnknown())
+                    if (result.isUnknown()) {
+                        System.out.println("unknown");
                         list.addAll(result.getStems());
-                    else
+                    } else
                         list.addAll(result.getLemmas());
                 }
                 return list;
@@ -114,8 +114,9 @@ public final class Zemberek3StemFilter extends TokenFilter {
 
         if (!input.incrementToken()) return false;
         if (keywordAttribute.isKeyword()) return true;
+        if (skipTypes.contains(typeAtt.type())) return true;
 
-        /**
+        /*
          *  copied from {@link org.apache.lucene.analysis.br.BrazilianStemFilter#incrementToken}
          */
         final String word = termAttribute.toString();
