@@ -21,9 +21,9 @@
     <developers>
         <developer>
             <name>Ahmet Arslan</name>
-            <email>aarslan2@anadolu.edu.tr</email>
-            <organization>Anadolu University</organization>
-            <organizationUrl>https://www.anadolu.edu.tr</organizationUrl>
+            <email>aarslan2@eskisehir.edu.tr</email>
+            <organization>Eskisehir Technical University</organization>
+            <organizationUrl>https://www.eskisehir.edu.tr</organizationUrl>
         </developer>
     </developers>
 
@@ -34,6 +34,8 @@
     </scm>
 
     <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -69,7 +71,6 @@
                     </execution>
                 </executions>
             </plugin>
-
 
 
             <plugin>
