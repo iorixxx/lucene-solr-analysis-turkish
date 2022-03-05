@@ -151,6 +151,22 @@
     <dependencies>
 
         <dependency>
+            <groupId>io.github.starlangsoftware</groupId>
+            <artifactId>MorphologicalAnalysis</artifactId>
+            <version>1.0.17</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.starlangsoftware</groupId>
+            <artifactId>MorphologicalDisambiguation</artifactId>
+            <version>1.0.11</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>zemberek-nlp</groupId>
             <artifactId>zemberek-morphology</artifactId>
             <version>0.17.1</version>
