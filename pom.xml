@@ -4,7 +4,7 @@
 
     <groupId>org.apache.lucene</groupId>
     <artifactId>TurkishAnalysis</artifactId>
-    <version>8.11.1</version>
+    <version>9.4.0</version>
     <packaging>jar</packaging>
 
     <name>TurkishAnalysis</name>
@@ -153,7 +153,7 @@
         <dependency>
             <groupId>io.github.starlangsoftware</groupId>
             <artifactId>MorphologicalAnalysis</artifactId>
-            <version>1.0.17</version>
+            <version>1.0.57</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
@@ -161,7 +161,7 @@
         <dependency>
             <groupId>io.github.starlangsoftware</groupId>
             <artifactId>MorphologicalDisambiguation</artifactId>
-            <version>1.0.11</version>
+            <version>1.0.21</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
@@ -184,7 +184,7 @@
 
         <dependency>
             <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-analyzers-common</artifactId>
+            <artifactId>lucene-analysis-common</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
@@ -193,7 +193,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.36</version>
+            <version>2.0.3</version>
             <scope>compile</scope>
             <type>jar</type>
         </dependency>
