@@ -17,7 +17,7 @@ package org.apache.lucene.tr;
  * limitations under the License.
  */
 
-import org.apache.lucene.analysis.BaseTokenStreamTestCase;
+import org.apache.lucene.tests.analysis.BaseTokenStreamTestCase;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tr.TurkishDeASCIIfyFilter;
 import org.junit.Test;
